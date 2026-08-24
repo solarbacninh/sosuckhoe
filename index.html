@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay Sức Khỏe - Kim</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Top Header -->
+    <header class="bg-teal-700 text-white shadow-md sticky top-0 z-30 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-teal-600 rounded-xl">
+                    <i data-lucide="heart-pulse" class="w-6 h-6 text-teal-100"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Kim Health Tracker</h1>
+                    <p class="text-xs text-teal-200">Sổ Tay Theo Dõi Sức Khỏe & Đơn Thuốc Cho Kim</p>
+                </div>
+            </div>
+            
+            <!-- Header Actions -->
+            <div class="flex items-center space-x-2">
+                <button onclick="requestNotificationPermission()" id="btnNotify" title="Bật thông báo nhắc uống thuốc" class="p-2 bg-teal-600 hover:bg-teal-500 rounded-lg text-teal-100 transition flex items-center space-x-1 text-xs">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Nhắc nhở</span>
+                </button>
+                <button onclick="openDoctorReportModal()" class="flex items-center space-x-1 bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm px-3 py-2 rounded-lg transition shadow-sm font-medium">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Xuất báo cáo Bác sĩ</span>
+                </button>
+                <button onclick="exportDataJSON()" title="Tải sao lưu dữ liệu" class="p-2 bg-teal-800 hover:bg-teal-900 rounded-lg text-teal-100 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+                <button onclick="triggerImportJSON()" title="Nhập dữ liệu từ file" class="p-2 bg-teal-800 hover:bg-teal-900 rounded-lg text-teal-100 transition">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                </button>
+                <input type="file" id="jsonFileInput" class="hidden" accept=".json" onchange="importDataJSON(event)">
+                <button onclick="confirmClearAllHistory()" title="Xóa toàn bộ dữ liệu" class="p-2 bg-rose-800 hover:bg-rose-900 rounded-lg text-rose-100 transition flex items-center space-x-1 text-xs font-medium">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Xóa lịch sử</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+        
+        <!-- Active Illness Alert Banner / Quick Stats -->
+        <div id="quickStatsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Stat 1: Active Sick Episode -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Đợt bệnh hiện tại</p>
+                    <p id="statActiveIllness" class="text-lg font-bold text-slate-800 mt-1">Không có</p>
+                    <span id="statActiveIllnessSub" class="text-xs text-emerald-600 font-medium mt-1 inline-block">Sức khỏe bình thường</span>
+                </div>
+                <div class="p-3 bg-teal-50 text-teal-600 rounded-xl">
+                    <i data-lucide="thermometer" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <!-- Stat 2: Today's Medication Schedule -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Thuốc cần uống hôm nay</p>
+                    <p id="statActiveAntibiotics" class="text-lg font-bold text-amber-600 mt-1">0 / 0 liều</p>
+                    <span id="statAntibioticDays" class="text-xs text-slate-500 mt-1 inline-block">Xem lịch nhắc bên dưới</span>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                    <i data-lucide="pill" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <!-- Stat 3: Allergies Count -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Dị ứng ghi nhận</p>
+                    <p id="statAllergiesCount" class="text-lg font-bold text-rose-600 mt-1">0 tác nhân</p>
+                    <span class="text-xs text-rose-500 font-medium mt-1 inline-block">Cần lưu ý khi kê đơn</span>
+                </div>
+                <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <!-- Stat 4: Recovery Status -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Xu hướng sức khỏe</p>
+                    <p id="statRecoveryTrend" class="text-lg font-bold text-indigo-600 mt-1">Ổn định</p>
+                    <span id="statLastUpdate" class="text-xs text-slate-500 mt-1 inline-block">Cập nhật gần nhất: -</span>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Antibiotic Warning Banner -->
+        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl mb-6 shadow-sm flex items-start space-x-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+            <div class="text-sm text-amber-900">
+                <span class="font-bold">Lưu ý quan trọng khi dùng thuốc:</span> Luôn dùng đúng liều, đúng giờ và đủ số ngày theo đơn bác sĩ chỉ định (đặc biệt là <strong>kháng sinh</strong>) để đảm bảo hiệu quả điều trị và tránh kháng thuốc.
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="border-b border-slate-200 mb-6 flex overflow-x-auto custom-scrollbar space-x-2 sm:space-x-4 no-print">
+            <button onclick="switchTab('illness')" id="tabBtn-illness" class="py-3 px-4 text-sm font-semibold border-b-2 border-teal-600 text-teal-600 flex items-center space-x-2 whitespace-nowrap">
+                <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                <span>1. Đợt Bệnh & Nhật Ký Cho Kim</span>
+            </button>
+            <button onclick="switchTab('antibiotics')" id="tabBtn-antibiotics" class="py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 whitespace-nowrap">
+                <i data-lucide="pill" class="w-4 h-4"></i>
+                <span>2. Đơn Thuốc & Nhắc Uống Thuốc</span>
+            </button>
+            <button onclick="switchTab('allergies')" id="tabBtn-allergies" class="py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 whitespace-nowrap">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                <span>3. Tiền Sử Dị Ứng</span>
+            </button>
+            <button onclick="switchTab('charts')" id="tabBtn-charts" class="py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 whitespace-nowrap">
+                <i data-lucide="line-chart" class="w-4 h-4"></i>
+                <span>4. Biểu Đồ & Báo Cáo Nhiệt Độ</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: Illness Episodes & Daily Recovery Tracking -->
+        <section id="tab-illness" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Danh sách các Đợt Bệnh / Khai Báo Sức Khỏe</h2>
+                    <p class="text-sm text-slate-500">Ghi nhận triệu chứng, nhiệt độ cơ thể và tình trạng tiến triển từng ngày cho Kim.</p>
+                </div>
+                <button onclick="openIllnessModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Tạo Đợt Bệnh Mới</span>
+                </button>
+            </div>
+
+            <!-- Illness List Container -->
+            <div id="illnessList" class="space-y-6">
+                <!-- Dynamic Content Loaded Here -->
+            </div>
+        </section>
+
+        <!-- TAB 2: Prescription & Medication Reminders -->
+        <section id="tab-antibiotics" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Sổ Đơn Thuốc & Lịch Nhắc Uống Thuốc</h2>
+                    <p class="text-sm text-slate-500">Quản lý các loại thuốc theo đơn, cài đặt giờ uống và tích chọn "Đã uống" để không bỏ sót liều nào.</p>
+                </div>
+                <button onclick="openAntibioticModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Thêm Thuốc Theo Đơn</span>
+                </button>
+            </div>
+
+            <!-- TODAY'S MEDICATION REMINDER BOARD -->
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 text-white shadow-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/20 pb-3 mb-4 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="bell-ring" class="w-6 h-6 text-amber-100 animate-pulse"></i>
+                        <h3 class="font-bold text-lg">Lịch Nhắc Uống Thuốc Hôm Nay (<span id="todayReminderDate"></span>)</h3>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="playTestChime()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg transition backdrop-blur-sm flex items-center space-x-1">
+                            <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                            <span>Thử chuông nhắc</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Doses Grid -->
+                <div id="todayScheduleContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Dynamic Reminders for Today -->
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-slate-800 pt-2">Danh Sách Thuốc Đang Sử Dụng / Kê Đơn</h3>
+            <!-- Antibiotic & Medication Cards Grid -->
+            <div id="antibioticList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamic Antibiotics Loaded Here -->
+            </div>
+        </section>
+
+        <!-- TAB 3: Allergy Profile -->
+        <section id="tab-allergies" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Hồ Sơ Dị Ứng & Phản Ứng Thuốc</h2>
+                    <p class="text-sm text-slate-500">Lưu lại tác nhân dị ứng (thuốc, thực phẩm, thời tiết) để cảnh báo an toàn cho những lần điều trị sau.</p>
+                </div>
+                <button onclick="openAllergyModal()" class="bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Khai Báo Dị Ứng</span>
+                </button>
+            </div>
+
+            <!-- Allergy Cards Grid -->
+            <div id="allergyList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Dynamic Allergies Loaded Here -->
+            </div>
+        </section>
+
+        <!-- TAB 4: Visual Trends & Temperature Report -->
+        <section id="tab-charts" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 mb-4 gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Biểu Đồ Diễn Tiến Thân Nhiệt & Triệu Chứng</h2>
+                        <p class="text-xs text-slate-500">Theo dõi sự biến đổi của nhiệt độ và mức độ nặng triệu chứng qua từng ngày.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-xs font-semibold text-slate-500">Chọn đợt bệnh:</label>
+                        <select id="chartIllnessSelect" onchange="renderChart()" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs rounded-lg p-2 focus:ring-teal-500 focus:border-teal-500">
+                            <!-- Options populated via JS -->
+                        </select>
+                    </div>
+                </div>
+                <div class="h-80 w-full relative">
+                    <canvas id="recoveryTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Dedicated Temperature Report Dashboard -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="thermometer" class="w-5 h-5 text-rose-600"></i>
+                        <span>Báo Cáo Chi Tiết Nhiệt Độ Cơ Thể</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Thống kê tự động từ các lần khai báo</span>
+                </div>
+                
+                <!-- Stat Badges for Temperature -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                        <p class="text-xs text-rose-600 font-medium">Nhiệt độ cao nhất</p>
+                        <p id="tempMax" class="text-xl font-bold text-rose-700 mt-1">-- °C</p>
+                    </div>
+                    <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                        <p class="text-xs text-amber-600 font-medium">Nhiệt độ trung bình</p>
+                        <p id="tempAvg" class="text-xl font-bold text-amber-700 mt-1">-- °C</p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                        <p class="text-xs text-emerald-600 font-medium">Nhiệt độ thấp nhất</p>
+                        <p id="tempMin" class="text-xl font-bold text-emerald-700 mt-1">-- °C</p>
+                    </div>
+                    <div class="p-3 bg-purple-50 border border-purple-100 rounded-xl">
+                        <p class="text-xs text-purple-600 font-medium">Số cơn sốt cao (≥38.5°C)</p>
+                        <p id="tempHighFeverCount" class="text-xl font-bold text-purple-700 mt-1">0 lần</p>
+                    </div>
+                </div>
+
+                <!-- Temperature log history breakdown table with delete action -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left border-collapse border border-slate-200 rounded-xl overflow-hidden">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-semibold">
+                                <th class="border border-slate-200 p-2.5">Đợt bệnh</th>
+                                <th class="border border-slate-200 p-2.5">Ngày đo</th>
+                                <th class="border border-slate-200 p-2.5">Nhiệt độ (°C)</th>
+                                <th class="border border-slate-200 p-2.5">Phân loại sốt</th>
+                                <th class="border border-slate-200 p-2.5">Ghi chú triệu chứng</th>
+                                <th class="border border-slate-200 p-2.5 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tempReportTableBody">
+                            <!-- Dynamic temp rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: Create Illness Modal -->
+    <div id="illnessModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Khai Báo Đợt Bệnh / Đau Ốm Mới</h3>
+                <button onclick="closeIllnessModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <!-- Quick Preset Illness Selector -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-600 mb-2">Chọn nhanh tên bệnh thường gặp:</label>
+                <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="selectIllnessPreset('Viêm họng cấp', 'Hô hấp')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Viêm họng cấp</button>
+                    <button type="button" onclick="selectIllnessPreset('Sốt xuất huyết', 'Truyền nhiễm')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Sốt xuất huyết</button>
+                    <button type="button" onclick="selectIllnessPreset('Cảm cúm A/B', 'Hô hấp')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Cảm cúm A/B</button>
+                    <button type="button" onclick="selectIllnessPreset('Sốt siêu vi', 'Nhiễm trùng')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Sốt siêu vi</button>
+                    <button type="button" onclick="selectIllnessPreset('Viêm phế quản', 'Hô hấp')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Viêm phế quản</button>
+                    <button type="button" onclick="selectIllnessPreset('Rối loạn tiêu hóa', 'Tiêu hóa')" class="text-xs bg-slate-100 hover:bg-teal-100 hover:text-teal-800 px-2.5 py-1 rounded-lg transition">Rối loạn tiêu hóa</button>
+                </div>
+            </div>
+
+            <form id="illnessForm" onsubmit="saveIllness(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tên đợt bệnh / Triệu chứng chính *</label>
+                    <input type="text" id="illTitle" placeholder="Ví dụ: Viêm họng cấp, Sốt siêu vi..." required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nhóm bệnh *</label>
+                        <select id="illCategory" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="Hô hấp">Hô hấp (Tai Mũi Họng)</option>
+                            <option value="Tiêu hóa">Tiêu hóa / Dạ dày</option>
+                            <option value="Truyền nhiễm">Truyền nhiễm / Virus</option>
+                            <option value="Sốt / Dị ứng">Sốt / Dị ứng</option>
+                            <option value="Nhiễm trùng">Nhiễm trùng</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mức độ ban đầu *</label>
+                        <select id="illSeverity" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="Nhẹ">Nhẹ (Tự điều trị)</option>
+                            <option value="Trung bình" selected>Trung bình (Khám PK)</option>
+                            <option value="Nặng">Nặng (Sốt cao / Mệt)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ngày phát bệnh *</label>
+                        <input type="date" id="illStartDate" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Trạng thái đợt bệnh</label>
+                        <select id="illStatus" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="treating">Đang điều trị</option>
+                            <option value="recovering">Đang phục hồi</option>
+                            <option value="cured">Đã khỏi hẳn</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Bác sĩ khám / Phòng khám</label>
+                    <input type="text" id="illDoctor" placeholder="Bs. Hoàng - PK Đa Khoa..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Mô tả chi tiết / Ghi chú ban đầu</label>
+                    <textarea id="illNotes" rows="2" placeholder="Đau họng từ tối qua, sốt 38.5 độ C, ho hắt hơi..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeIllnessModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-sm">Lưu đợt bệnh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Daily Symptom Log Modal -->
+    <div id="logModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Cập Nhật Tình Trạng Hôm Nay</h3>
+                <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="logForm" onsubmit="saveDailyLog(event)" class="space-y-4">
+                <input type="hidden" id="logIllnessId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ngày ghi nhận *</label>
+                    <input type="date" id="logDate" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nhiệt độ cơ thể (°C) *</label>
+                        <input type="number" step="0.1" min="35" max="42" id="logTemp" placeholder="37.5" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mức triệu chứng (1-10) *</label>
+                        <select id="logSeverity" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="2">1-2: Rất nhẹ / Đang đỡ</option>
+                            <option value="5" selected>3-5: Khó chịu vừa phải</option>
+                            <option value="8">6-8: Nặng / Rất mệt</option>
+                            <option value="10">9-10: Cực kỳ nghiêm trọng</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Đánh giá chung hôm nay *</label>
+                    <select id="logConditionState" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none">
+                        <option value="improving">Thuyên giảm / Tốt hơn</option>
+                        <option value="stable">Không đổi / Ổn định</option>
+                        <option value="worse">Nặng hơn / Cần chú ý</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Chi tiết biểu hiện / Nhận xét</label>
+                    <textarea id="logNotes" rows="3" placeholder="Đã hạ sốt, ho giảm còn hắt hơi nhiều, ăn uống tốt hơn..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeLogModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-sm">Thêm cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Prescription & Medication Modal -->
+    <div id="antibioticModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Thêm Thuốc Theo Đơn & Cài Giờ Nhắc</h3>
+                <button onclick="closeAntibioticModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="antibioticForm" onsubmit="saveAntibiotic(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Thuộc đợt bệnh nào *</label>
+                    <select id="abIllnessSelect" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tên thuốc *</label>
+                    <input type="text" id="abName" placeholder="Ví dụ: Augmentin 1g, Paracetamol 500mg, Siro Ho..." required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Phân loại thuốc *</label>
+                        <select id="abCategory" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                            <option value="Kháng sinh">Kháng sinh</option>
+                            <option value="Hạ sốt / Giảm đau">Hạ sốt / Giảm đau</option>
+                            <option value="Thuốc ho / Long đờm">Thuốc ho / Long đờm</option>
+                            <option value="Men tiêu hóa / Oresol">Men tiêu hóa / Oresol</option>
+                            <option value="Vitamin / Bổ sung">Vitamin / Bổ sung</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Liều dùng *</label>
+                        <input type="text" id="abDose" placeholder="Ví dụ: 1 viên, 5ml..." required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Custom Alarm Time Selector -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Chọn khung giờ uống thuốc hàng ngày (Tick các giờ) *</label>
+                    <div class="grid grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="07:00" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>07:00 (Sáng)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="08:00" checked class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>08:00 (Sáng)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="12:00" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>12:00 (Trưa)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="13:00" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>13:00 (Trưa)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="17:00" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>17:00 (Chiều)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="20:00" checked class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>20:00 (Tối)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="21:30" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>21:30 (Đêm)</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" name="abTimes" value="23:00" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>23:00 (Đêm)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ngày bắt đầu uống *</label>
+                        <input type="date" id="abStartDate" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tổng số ngày kê đơn *</label>
+                        <input type="number" id="abTotalDays" min="1" max="30" value="7" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hướng dẫn / Hạn chế khi dùng</label>
+                    <textarea id="abNotes" rows="2" placeholder="Uống sau ăn 30 phút. Tránh uống cùng sữa..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeAntibioticModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-sm">Lưu thuốc & Lịch uống</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Allergy Modal -->
+    <div id="allergyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Khai Báo Tác Nhân Dị Ứng</h3>
+                <button onclick="closeAllergyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="allergyForm" onsubmit="saveAllergy(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tên thuốc / Thực phẩm / Tác nhân *</label>
+                    <input type="text" id="algAllergen" placeholder="Ví dụ: Aspirin, Penicillin, Tôm/Cua, Phấn hoa..." required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Loại tác nhân *</label>
+                        <select id="algCategory" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+                            <option value="Thuốc">Thuốc điều trị</option>
+                            <option value="Thức ăn">Thực phẩm</option>
+                            <option value="Thời tiết">Thời tiết / Môi trường</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mức độ nghiêm trọng *</label>
+                        <select id="algSeverity" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+                            <option value="Nhẹ">Nhẹ (Ngứa, mẩn đỏ)</option>
+                            <option value="Trung bình">Trung bình (Nổi mề đai)</option>
+                            <option value="Nặng / Sốc phản vệ">Nặng / Phản vệ</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Phản ứng/Triệu chứng từng gặp</label>
+                    <input type="text" id="algReaction" placeholder="Ví dụ: Phù mắt, khó thở, nổi mẩn đỏ toàn thân..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú bổ sung</label>
+                    <textarea id="algNotes" rows="2" placeholder="Cần tránh tất cả nhóm thuốc NSAIDs..." class="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeAllergyModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm">Lưu dị ứng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Doctor Print Report Modal -->
+    <div id="doctorReportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-200 no-print">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 text-teal-600"></i>
+                    <h3 class="text-lg font-bold text-slate-800">Tóm Tắt Sức Khỏe Kim Cho Bác Sĩ Xem</h3>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="window.print()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center space-x-1">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                        <span>In / Lưu PDF</span>
+                    </button>
+                    <button onclick="closeDoctorReportModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <!-- Print Printable Content Area -->
+            <div id="reportPrintArea" class="py-4 space-y-6 text-slate-800">
+                <div class="text-center border-b pb-4 border-slate-200">
+                    <h2 class="text-xl font-bold uppercase tracking-wide text-teal-800">Báo Cáo Tóm Tắt Tình Trạng Bệnh & Thuốc</h2>
+                    <p class="text-xs text-slate-500 mt-1">Bệnh nhân: <strong>Kim</strong> • Ngày xuất báo cáo: <span id="reportPrintDate"></span></p>
+                </div>
+
+                <!-- Allergy Warning Box in Print -->
+                <div>
+                    <h4 class="text-sm font-bold text-rose-700 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="shield-alert" class="w-4 h-4"></i> Tiền Sử Dị Ứng
+                    </h4>
+                    <div id="reportAllergiesList" class="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs space-y-1">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Active Illness & Symptoms -->
+                <div>
+                    <h4 class="text-sm font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="stethoscope" class="w-4 h-4"></i> Đợt Bệnh Gần Nhất / Đang Điều Trị
+                    </h4>
+                    <div id="reportIllnessDetail" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Active & Recent Antibiotics -->
+                <div>
+                    <h4 class="text-sm font-bold text-amber-800 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="pill" class="w-4 h-4"></i> Thuốc Đã / Đang Sử Dụng
+                    </h4>
+                    <div id="reportAntibioticsList" class="bg-amber-50/50 border border-amber-200 rounded-xl p-3 text-xs space-y-2">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Daily Temperature & Symptoms Table -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="calendar" class="w-4 h-4"></i> Nhật Ký Nhiệt Độ & Tiến Trình Triệu Chứng
+                    </h4>
+                    <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700">
+                                <th class="border border-slate-200 p-2">Ngày</th>
+                                <th class="border border-slate-200 p-2">Nhiệt độ</th>
+                                <th class="border border-slate-200 p-2">Mức độ</th>
+                                <th class="border border-slate-200 p-2">Đánh giá</th>
+                                <th class="border border-slate-200 p-2">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportLogsTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: CUSTOM CONFIRMATION DIALOG -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center space-x-3 text-rose-600">
+                <i data-lucide="alert-triangle" class="w-6 h-6 shrink-0"></i>
+                <h3 id="confirmModalTitle" class="font-bold text-slate-800 text-base">Xác nhận xóa</h3>
+            </div>
+            <p id="confirmModalMessage" class="text-xs text-slate-600 leading-relaxed">Bạn có chắc chắn muốn xóa mục này không?</p>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeConfirmModal(false)" class="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Hủy bỏ</button>
+                <button id="confirmModalActionBtn" onclick="executeConfirmModalAction()" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm">Xóa ngay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 no-print"></div>
+
+    <script>
+        // --- INITIAL DEFAULT SAMPLE DATA FOR KIM ---
+        const DEFAULT_DATA = {
+            illnesses: [
+                {
+                    id: "ill-sample-1",
+                    title: "Viêm Họng Cấp & Sốt Cao",
+                    category: "Hô hấp",
+                    severity: "Trung bình",
+                    startDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+                    status: "treating", // treating, recovering, cured
+                    doctor: "Bs. Hoàng - Phòng Khám Đa Khoa",
+                    notes: "Đau rát họng, nuốt vướng, sốt theo cơn.",
+                    logs: [
+                        { id: "log-1", date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], temp: 38.8, severity: 8, conditionState: "worse", notes: "Sốt rét run về chiều, đau họng nặng" },
+                        { id: "log-2", date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], temp: 38.0, severity: 6, conditionState: "stable", notes: "Bắt đầu uống kháng sinh, bớt lạnh" },
+                        { id: "log-3", date: new Date().toISOString().split('T')[0], temp: 37.2, severity: 3, conditionState: "improving", notes: "Hạ sốt hoàn toàn, họng bớt đau nhẹ" }
+                    ]
+                }
+            ],
+            antibiotics: [
+                {
+                    id: "ab-sample-1",
+                    illnessId: "ill-sample-1",
+                    name: "Augmentin 1g (Amoxicillin/Clavulanate)",
+                    dose: "1 viên / lần",
+                    frequency: "2 lần/ngày",
+                    times: ["08:00", "20:00"],
+                    startDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+                    totalDays: 7,
+                    category: "Kháng sinh",
+                    notes: "Uống đủ 7 ngày liên tục. Tránh bỏ liều."
+                },
+                {
+                    id: "ab-sample-2",
+                    illnessId: "ill-sample-1",
+                    name: "Paracetamol 500mg",
+                    dose: "1 viên / lần",
+                    frequency: "Sốt >38.5°C mới uống",
+                    times: ["12:00", "20:00"],
+                    startDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+                    totalDays: 5,
+                    category: "Hạ sốt / Giảm đau",
+                    notes: "Cách nhau tối thiểu 4-6 tiếng."
+                }
+            ],
+            dosesTaken: {}, // Format: { "YYYY-MM-DD_medId_time": true }
+            allergies: [
+                {
+                    id: "alg-sample-1",
+                    allergen: "Aspirin & Ibuprofen",
+                    category: "Thuốc",
+                    severity: "Nặng / Sốc phản vệ",
+                    reaction: "Nổi mề đai toàn thân, phù mi mắt, khó thở nhẹ",
+                    notes: "Bị năm 2023. Cần báo bác sĩ không kê nhóm NSAIDs."
+                }
+            ]
+        };
+
+        let appData = loadData();
+        let chartInstance = null;
+        let confirmCallback = null;
+
+        function loadData() {
+            const stored = localStorage.getItem("kim_health_tracker_data");
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (!parsed.dosesTaken) parsed.dosesTaken = {};
+                    return parsed;
+                } catch(e) {
+                    console.error("Lỗi đọc dữ liệu:", e);
+                }
+            }
+            return DEFAULT_DATA;
+        }
+
+        function saveData() {
+            localStorage.setItem("kim_health_tracker_data", JSON.stringify(appData));
+            updateStats();
+            renderAllTabs();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tabBtn-"]').forEach(btn => {
+                btn.className = "py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 whitespace-nowrap";
+            });
+
+            const activeTab = document.getElementById('tab-' + tabId);
+            const activeBtn = document.getElementById('tabBtn-' + tabId);
+            if (activeTab) activeTab.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = "py-3 px-4 text-sm font-semibold border-b-2 border-teal-600 text-teal-600 flex items-center space-x-2 whitespace-nowrap";
+
+            if (tabId === 'charts') {
+                renderChart();
+            }
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const bgClass = type === 'warning' ? 'bg-amber-600' : type === 'error' ? 'bg-rose-600' : 'bg-teal-700';
+            const toast = document.createElement('div');
+            toast.className = `${bgClass} text-white text-xs px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition-all transform translate-y-2 opacity-0 duration-200`;
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 shrink-0"></i><span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 200);
+            }, 3000);
+        }
+
+        // Custom Confirm Modal Handler (Replaces confirm())
+        function openCustomConfirm(title, message, onConfirmAction) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            confirmCallback = onConfirmAction;
+            document.getElementById('confirmModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeConfirmModal(execute = false) {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmCallback = null;
+        }
+
+        function executeConfirmModalAction() {
+            if (confirmCallback) confirmCallback();
+            closeConfirmModal(true);
+        }
+
+        // Audio synthesizer chime for medication reminders
+        function playTestChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.15); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.3); // G5
+                
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.8);
+                showToast("Đang phát âm thanh nhắc nhở!");
+            } catch(e) {
+                showToast("Trình duyệt không hỗ trợ Audio Synthesizer.", "warning");
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                showToast("Trình duyệt không hỗ trợ thông báo!", "warning");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    showToast("Đã bật thông báo thành công!");
+                } else {
+                    showToast("Không thể bật thông báo trình duyệt.", "warning");
+                }
+            });
+        }
+
+        // Dashboard Metrics update
+        function updateStats() {
+            const activeIllness = appData.illnesses.find(i => i.status === 'treating' || i.status === 'recovering');
+            const statIllnessEl = document.getElementById('statActiveIllness');
+            const statIllnessSub = document.getElementById('statActiveIllnessSub');
+
+            if (activeIllness) {
+                statIllnessEl.textContent = activeIllness.title;
+                statIllnessEl.className = "text-base font-bold text-amber-700 mt-1 truncate max-w-[180px]";
+                statIllnessSub.textContent = activeIllness.status === 'treating' ? 'Đang điều trị' : 'Đang hồi phục';
+                statIllnessSub.className = "text-xs text-amber-600 font-medium mt-1 inline-block";
+            } else {
+                statIllnessEl.textContent = "Không có";
+                statIllnessEl.className = "text-lg font-bold text-slate-800 mt-1";
+                statIllnessSub.textContent = "Sức khỏe bình thường";
+                statIllnessSub.className = "text-xs text-emerald-600 font-medium mt-1 inline-block";
+            }
+
+            // Calculate Today's Dose Stats
+            const todayStr = new Date().toISOString().split('T')[0];
+            let totalDosesToday = 0;
+            let takenDosesToday = 0;
+
+            appData.antibiotics.forEach(ab => {
+                const start = new Date(ab.startDate);
+                const end = new Date(start);
+                end.setDate(end.getDate() + parseInt(ab.totalDays));
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                start.setHours(0,0,0,0);
+
+                if (today >= start && today <= end) {
+                    const times = ab.times || ["08:00", "20:00"];
+                    totalDosesToday += times.length;
+                    times.forEach(t => {
+                        const key = `${todayStr}_${ab.id}_${t}`;
+                        if (appData.dosesTaken && appData.dosesTaken[key]) {
+                            takenDosesToday++;
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('statActiveAntibiotics').textContent = `${takenDosesToday} / ${totalDosesToday} liều`;
+            document.getElementById('statAllergiesCount').textContent = `${appData.allergies.length} tác nhân`;
+
+            // Recovery Trend Stat
+            if (activeIllness && activeIllness.logs && activeIllness.logs.length > 0) {
+                const latestLog = activeIllness.logs[activeIllness.logs.length - 1];
+                const stateMap = {
+                    improving: { text: "Đang tiến triển tốt", class: "text-emerald-600" },
+                    stable: { text: "Tình trạng ổn định", class: "text-blue-600" },
+                    worse: { text: "Cần chú ý / Nặng hơn", class: "text-rose-600" }
+                };
+                const info = stateMap[latestLog.conditionState] || { text: "Chưa rõ", class: "text-slate-600" };
+                document.getElementById('statRecoveryTrend').textContent = info.text;
+                document.getElementById('statRecoveryTrend').className = `text-sm font-bold mt-1 ${info.class}`;
+                document.getElementById('statLastUpdate').textContent = `Nhiệt độ: ${latestLog.temp}°C (${latestLog.date})`;
+            } else {
+                document.getElementById('statRecoveryTrend').textContent = "Bình thường";
+                document.getElementById('statRecoveryTrend').className = "text-lg font-bold text-indigo-600 mt-1";
+                document.getElementById('statLastUpdate').textContent = "Chưa có nhật ký";
+            }
+        }
+
+        function renderIllnessList() {
+            const container = document.getElementById('illnessList');
+            if (!container) return;
+
+            if (appData.illnesses.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-8 text-center rounded-2xl border border-slate-200 shadow-sm">
+                        <i data-lucide="smile" class="w-12 h-12 text-teal-500 mx-auto mb-3"></i>
+                        <h3 class="font-bold text-slate-700">Chưa có lịch sử đợt bệnh nào</h3>
+                        <p class="text-xs text-slate-500 mt-1">Bấm nút "Tạo Đợt Bệnh Mới" ở trên để ghi nhận khi Kim bị đau ốm hoặc sốt.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = appData.illnesses.map(ill => {
+                const statusBadge = ill.status === 'treating'
+                    ? `<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-full">Đang điều trị</span>`
+                    : ill.status === 'recovering'
+                    ? `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">Đang hồi phục</span>`
+                    : `<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">Đã khỏi bệnh</span>`;
+
+                const logsHtml = (ill.logs && ill.logs.length > 0) ? ill.logs.map(log => {
+                    const tempColor = log.temp >= 38.5 ? 'text-rose-600 font-bold' : log.temp >= 37.5 ? 'text-amber-600 font-bold' : 'text-emerald-600 font-semibold';
+                    const stateIcon = log.conditionState === 'improving' ? 'trending-down text-emerald-500' : log.conditionState === 'worse' ? 'trending-up text-rose-500' : 'minus text-slate-400';
+                    return `
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs flex justify-between items-start gap-2">
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-slate-700">${log.date}</span>
+                                    <span class="${tempColor} bg-white px-2 py-0.5 rounded border border-slate-200">${log.temp} °C</span>
+                                    <span class="flex items-center text-slate-500"><i data-lucide="${stateIcon}" class="w-3.5 h-3.5 inline mr-1"></i> Mức độ ${log.severity}/10</span>
+                                </div>
+                                ${log.notes ? `<p class="text-slate-600">${log.notes}</p>` : ''}
+                            </div>
+                            <!-- Delete Log Entry Button -->
+                            <button onclick="confirmDeleteDailyLog('${ill.id}', '${log.id}')" title="Xóa dòng nhật ký này" class="text-slate-400 hover:text-rose-600 p-1 shrink-0">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('') : `<p class="text-xs text-slate-400 italic">Chưa có nhật ký theo dõi theo ngày.</p>`;
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-100">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="font-bold text-lg text-slate-800">${ill.title}</h3>
+                                    ${statusBadge}
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Phát bệnh từ: <strong>${ill.startDate}</strong> • Nhóm: <strong>${ill.category}</strong> ${ill.doctor ? `• Khám tại: <strong>${ill.doctor}</strong>` : ''}</p>
+                            </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <button onclick="openLogModal('${ill.id}')" class="bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-teal-200 transition flex items-center space-x-1">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    <span>Cập nhật triệu chứng</span>
+                                </button>
+                                <button onclick="confirmDeleteIllness('${ill.id}')" title="Xóa toàn bộ đợt bệnh này" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        ${ill.notes ? `<div class="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-slate-600"><strong>Ghi chú ban đầu:</strong> ${ill.notes}</div>` : ''}
+
+                        <!-- Logs Section -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                                <i data-lucide="list" class="w-3.5 h-3.5 text-teal-600"></i>
+                                <span>Nhật ký theo dõi hàng ngày (${ill.logs ? ill.logs.length : 0} lượt)</span>
+                            </h4>
+                            <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                                ${logsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function openIllnessModal() {
+            document.getElementById('illnessForm').reset();
+            document.getElementById('illStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('illnessModal').classList.remove('hidden');
+        }
+
+        function closeIllnessModal() {
+            document.getElementById('illnessModal').classList.add('hidden');
+        }
+
+        function selectIllnessPreset(title, category) {
+            document.getElementById('illTitle').value = title;
+            document.getElementById('illCategory').value = category;
+        }
+
+        function saveIllness(e) {
+            e.preventDefault();
+            const newIllness = {
+                id: "ill-" + Date.now(),
+                title: document.getElementById('illTitle').value,
+                category: document.getElementById('illCategory').value,
+                severity: document.getElementById('illSeverity').value,
+                startDate: document.getElementById('illStartDate').value,
+                status: document.getElementById('illStatus').value,
+                doctor: document.getElementById('illDoctor').value,
+                notes: document.getElementById('illNotes').value,
+                logs: []
+            };
+            appData.illnesses.unshift(newIllness);
+            saveData();
+            closeIllnessModal();
+            showToast("Đã lưu đợt bệnh mới!");
+        }
+
+        function confirmDeleteIllness(id) {
+            openCustomConfirm("Xóa đợt bệnh", "Bạn có chắc chắn muốn xóa đợt bệnh này? Các đơn thuốc và nhật ký liên quan sẽ bị loại bỏ.", () => {
+                appData.illnesses = appData.illnesses.filter(i => i.id !== id);
+                appData.antibiotics = appData.antibiotics.filter(a => a.illnessId !== id);
+                saveData();
+                showToast("Đã xóa đợt bệnh thành công!");
+            });
+        }
+
+        // Daily Log handlers
+        function openLogModal(illnessId) {
+            document.getElementById('logForm').reset();
+            document.getElementById('logIllnessId').value = illnessId;
+            document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('logTemp').value = "37.5";
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.add('hidden');
+        }
+
+        function saveDailyLog(e) {
+            e.preventDefault();
+            const illnessId = document.getElementById('logIllnessId').value;
+            const illness = appData.illnesses.find(i => i.id === illnessId);
+            if (!illness) return;
+
+            const newLog = {
+                id: "log-" + Date.now(),
+                date: document.getElementById('logDate').value,
+                temp: parseFloat(document.getElementById('logTemp').value),
+                severity: parseInt(document.getElementById('logSeverity').value),
+                conditionState: document.getElementById('logConditionState').value,
+                notes: document.getElementById('logNotes').value
+            };
+
+            if (!illness.logs) illness.logs = [];
+            illness.logs.push(newLog);
+            illness.logs.sort((a,b) => a.date.localeCompare(b.date));
+
+            saveData();
+            closeLogModal();
+            showToast("Đã cập nhật nhật ký triệu chứng!");
+        }
+
+        function confirmDeleteDailyLog(illnessId, logId) {
+            openCustomConfirm("Xóa nhật ký ngày", "Bạn có muốn xóa khai báo triệu chứng/nhiệt độ ngày này không?", () => {
+                const illness = appData.illnesses.find(i => i.id === illnessId);
+                if (illness && illness.logs) {
+                    illness.logs = illness.logs.filter(l => l.id !== logId);
+                    saveData();
+                    showToast("Đã xóa dòng nhật ký!");
+                }
+            });
+        }
+
+        function renderTodayReminders() {
+            const container = document.getElementById('todayScheduleContainer');
+            const dateLabel = document.getElementById('todayReminderDate');
+            if (!container) return;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (dateLabel) dateLabel.textContent = new Date().toLocaleDateString('vi-VN');
+
+            let reminderItems = [];
+
+            appData.antibiotics.forEach(ab => {
+                const start = new Date(ab.startDate);
+                const end = new Date(start);
+                end.setDate(end.getDate() + parseInt(ab.totalDays));
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                start.setHours(0,0,0,0);
+
+                if (today >= start && today <= end) {
+                    const times = ab.times || ["08:00", "20:00"];
+                    times.forEach(t => {
+                        const key = `${todayStr}_${ab.id}_${t}`;
+                        const isTaken = !!(appData.dosesTaken && appData.dosesTaken[key]);
+                        reminderItems.push({
+                            key: key,
+                            medId: ab.id,
+                            medName: ab.name,
+                            dose: ab.dose,
+                            time: t,
+                            category: ab.category || "Thuốc",
+                            isTaken: isTaken
+                        });
+                    });
+                }
+            });
+
+            reminderItems.sort((a,b) => a.time.localeCompare(b.time));
+
+            if (reminderItems.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white/10 backdrop-blur-md p-4 text-center rounded-xl border border-white/20 text-white text-xs">
+                        🎉 Tốt lắm! Không có lịch uống thuốc nào diễn ra hôm nay.
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = reminderItems.map(item => {
+                const bgClass = item.isTaken ? 'bg-emerald-900/40 border-emerald-300/40' : 'bg-white/10 border-white/20 hover:bg-white/20';
+                const btnClass = item.isTaken ? 'bg-emerald-500 text-white font-bold' : 'bg-white text-amber-900 hover:bg-amber-100 font-semibold';
+                const icon = item.isTaken ? 'check-circle' : 'clock';
+
+                return `
+                    <div class="${bgClass} border rounded-xl p-3 flex justify-between items-center transition backdrop-blur-sm">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center space-x-1 text-xs text-amber-200">
+                                <i data-lucide="${icon}" class="w-3.5 h-3.5"></i>
+                                <span class="font-bold">${item.time}</span>
+                                <span>• ${item.category}</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-white leading-snug">${item.medName}</h4>
+                            <p class="text-[11px] text-amber-100">Liều: ${item.dose}</p>
+                        </div>
+                        <button onclick="toggleDoseTaken('${item.key}')" class="${btnClass} text-xs px-3 py-1.5 rounded-lg transition shadow-sm shrink-0 flex items-center space-x-1">
+                            <span>${item.isTaken ? '✓ Đã uống' : 'Uống thuốc'}</span>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function toggleDoseTaken(key) {
+            if (!appData.dosesTaken) appData.dosesTaken = {};
+            appData.dosesTaken[key] = !appData.dosesTaken[key];
+            if (appData.dosesTaken[key]) {
+                playTestChime();
+                showToast("Đã đánh dấu đã uống thuốc!");
+            } else {
+                showToast("Đã bỏ chọn đánh dấu!");
+            }
+            saveData();
+        }
+
+        function renderAntibioticsTab() {
+            renderTodayReminders();
+            const container = document.getElementById('antibioticList');
+            if (!container) return;
+
+            if (appData.antibiotics.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-8 text-center rounded-2xl border border-slate-200">
+                        <i data-lucide="pill" class="w-12 h-12 text-amber-500 mx-auto mb-3"></i>
+                        <h3 class="font-bold text-slate-700">Chưa có thông tin thuốc theo đơn</h3>
+                        <p class="text-xs text-slate-500 mt-1">Bấm "Thêm Thuốc Theo Đơn" để lưu lại liều lượng và lịch hẹn giờ uống cho Kim.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = appData.antibiotics.map(ab => {
+                const illness = appData.illnesses.find(i => i.id === ab.illnessId);
+                const illnessTitle = illness ? illness.title : 'Đợt bệnh không xác định';
+                
+                const start = new Date(ab.startDate);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                start.setHours(0,0,0,0);
+                
+                const diffTime = today - start;
+                const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                const totalDays = parseInt(ab.totalDays) || 1;
+                
+                let progressPercent = Math.min(100, Math.max(0, Math.round((daysPassed / totalDays) * 100)));
+                let statusBadge = '';
+                if (daysPassed <= 0) {
+                    statusBadge = `<span class="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full">Chưa uống</span>`;
+                    progressPercent = 0;
+                } else if (daysPassed <= totalDays) {
+                    statusBadge = `<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">Đang uống (Ngày ${daysPassed}/${totalDays})</span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full">Đã xong (${totalDays}/${totalDays} ngày)</span>`;
+                    progressPercent = 100;
+                }
+
+                const timesBadge = (ab.times || ["08:00", "20:00"]).map(t => `<span class="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded text-[11px] font-semibold">${t}</span>`).join(' ');
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <span class="text-[11px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md">${illnessTitle}</span>
+                                <h3 class="font-bold text-base text-slate-800 mt-1">${ab.name}</h3>
+                                ${ab.category ? `<p class="text-xs text-slate-400 font-medium">${ab.category}</p>` : ''}
+                            </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                ${statusBadge}
+                                <button onclick="confirmDeleteAntibiotic('${ab.id}')" title="Xóa thuốc này" class="text-slate-400 hover:text-rose-600 p-1">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl">
+                            <div><span class="text-slate-400">Liều dùng:</span> <strong class="text-slate-700">${ab.dose}</strong></div>
+                            <div><span class="text-slate-400">Giờ uống:</span> <div class="inline-flex flex-wrap gap-1 mt-0.5">${timesBadge}</div></div>
+                            <div><span class="text-slate-400">Bắt đầu:</span> <strong class="text-slate-700">${ab.startDate}</strong></div>
+                            <div><span class="text-slate-400">Thời gian:</span> <strong class="text-slate-700">${ab.totalDays} ngày</strong></div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                                <span>Tiến trình hoàn thành đợt thuốc</span>
+                                <span class="font-semibold text-slate-700">${progressPercent}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                            </div>
+                        </div>
+
+                        ${ab.notes ? `<p class="text-xs text-slate-600 italic bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">💡 ${ab.notes}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openAntibioticModal() {
+            const select = document.getElementById('abIllnessSelect');
+            select.innerHTML = appData.illnesses.map(i => `<option value="${i.id}">${i.title} (${i.startDate})</option>`).join('');
+            if (appData.illnesses.length === 0) {
+                showToast("Vui lòng tạo một đợt bệnh trước khi thêm thuốc!", "warning");
+                return;
+            }
+            document.getElementById('antibioticForm').reset();
+            document.getElementById('abStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('antibioticModal').classList.remove('hidden');
+        }
+
+        function closeAntibioticModal() {
+            document.getElementById('antibioticModal').classList.add('hidden');
+        }
+
+        function saveAntibiotic(e) {
+            e.preventDefault();
+            const timeCheckboxes = document.querySelectorAll('input[name="abTimes"]:checked');
+            const selectedTimes = Array.from(timeCheckboxes).map(cb => cb.value);
+
+            if (selectedTimes.length === 0) {
+                showToast("Vui lòng chọn ít nhất 1 khung giờ uống thuốc!", "warning");
+                return;
+            }
+
+            const newAb = {
+                id: "ab-" + Date.now(),
+                illnessId: document.getElementById('abIllnessSelect').value,
+                name: document.getElementById('abName').value,
+                dose: document.getElementById('abDose').value,
+                times: selectedTimes,
+                frequency: `${selectedTimes.length} lần / ngày`,
+                startDate: document.getElementById('abStartDate').value,
+                totalDays: parseInt(document.getElementById('abTotalDays').value),
+                category: document.getElementById('abCategory').value,
+                notes: document.getElementById('abNotes').value
+            };
+            appData.antibiotics.unshift(newAb);
+            saveData();
+            closeAntibioticModal();
+            showToast("Đã lưu thông tin thuốc & lịch nhắc thành công!");
+        }
+
+        function confirmDeleteAntibiotic(id) {
+            openCustomConfirm("Xóa thuốc", "Bạn có chắc chắn muốn xóa đơn thuốc này không?", () => {
+                appData.antibiotics = appData.antibiotics.filter(a => a.id !== id);
+                saveData();
+                showToast("Đã xóa đơn thuốc thành công!");
+            });
+        }
+
+        function renderAllergiesTab() {
+            const container = document.getElementById('allergyList');
+            if (!container) return;
+
+            if (appData.allergies.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-8 text-center rounded-2xl border border-slate-200">
+                        <i data-lucide="shield-check" class="w-12 h-12 text-emerald-500 mx-auto mb-3"></i>
+                        <h3 class="font-bold text-slate-700">Chưa ghi nhận dị ứng nào</h3>
+                        <p class="text-xs text-slate-500 mt-1">Bấm "Khai Báo Dị Ứng" nếu Kim từng dị ứng với loại thuốc hoặc thức ăn nào.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = appData.allergies.map(alg => {
+                const sevBadge = alg.severity.includes('Nặng')
+                    ? `<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Cực kỳ nghiêm trọng</span>`
+                    : alg.severity.includes('Trung')
+                    ? `<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Trung bình</span>`
+                    : `<span class="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">Nhẹ</span>`;
+
+                return `
+                    <div class="bg-white rounded-2xl border border-rose-100 shadow-sm p-5 space-y-3">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <span class="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">${alg.category}</span>
+                                <h3 class="font-bold text-base text-slate-800 mt-1">${alg.allergen}</h3>
+                            </div>
+                            <button onclick="confirmDeleteAllergy('${alg.id}')" title="Xóa tác nhân này" class="text-slate-400 hover:text-rose-600 p-1">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div>${sevBadge}</div>
+                        ${alg.reaction ? `<p class="text-xs text-slate-600"><strong>Phản ứng:</strong> ${alg.reaction}</p>` : ''}
+                        ${alg.notes ? `<p class="text-xs text-slate-500 italic bg-slate-50 p-2 rounded-lg">Ghi chú: ${alg.notes}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function openAllergyModal() {
+            document.getElementById('allergyForm').reset();
+            document.getElementById('allergyModal').classList.remove('hidden');
+        }
+
+        function closeAllergyModal() {
+            document.getElementById('allergyModal').classList.add('hidden');
+        }
+
+        function saveAllergy(e) {
+            e.preventDefault();
+            const newAlg = {
+                id: "alg-" + Date.now(),
+                allergen: document.getElementById('algAllergen').value,
+                category: document.getElementById('algCategory').value,
+                severity: document.getElementById('algSeverity').value,
+                reaction: document.getElementById('algReaction').value,
+                notes: document.getElementById('algNotes').value
+            };
+            appData.allergies.unshift(newAlg);
+            saveData();
+            closeAllergyModal();
+            showToast("Đã lưu khai báo dị ứng!");
+        }
+
+        function confirmDeleteAllergy(id) {
+            openCustomConfirm("Xóa dị ứng", "Bạn có muốn xóa khai báo tác nhân dị ứng này không?", () => {
+                appData.allergies = appData.allergies.filter(a => a.id !== id);
+                saveData();
+                showToast("Đã xóa dị ứng!");
+            });
+        }
+
+        function renderTempReport() {
+            const tableBody = document.getElementById('tempReportTableBody');
+            if (!tableBody) return;
+
+            let allLogs = [];
+            appData.illnesses.forEach(ill => {
+                if (ill.logs && ill.logs.length > 0) {
+                    ill.logs.forEach(l => {
+                        allLogs.push({ ...l, illnessTitle: ill.title, illnessId: ill.id });
+                    });
+                }
+            });
+
+            if (allLogs.length === 0) {
+                document.getElementById('tempMax').textContent = "-- °C";
+                document.getElementById('tempAvg').textContent = "-- °C";
+                document.getElementById('tempMin').textContent = "-- °C";
+                document.getElementById('tempHighFeverCount').textContent = "0 lần";
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Chưa có nhật ký nhiệt độ nào được tạo.</td></tr>`;
+                return;
+            }
+
+            const temps = allLogs.map(l => l.temp);
+            const maxTemp = Math.max(...temps);
+            const minTemp = Math.min(...temps);
+            const avgTemp = (temps.reduce((a,b) => a + b, 0) / temps.length).toFixed(1);
+            const highFeverCount = temps.filter(t => t >= 38.5).length;
+
+            document.getElementById('tempMax').textContent = `${maxTemp} °C`;
+            document.getElementById('tempAvg').textContent = `${avgTemp} °C`;
+            document.getElementById('tempMin').textContent = `${minTemp} °C`;
+            document.getElementById('tempHighFeverCount').textContent = `${highFeverCount} lần`;
+
+            allLogs.sort((a,b) => b.date.localeCompare(a.date));
+
+            tableBody.innerHTML = allLogs.map(l => {
+                let badge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Bình thường (<37.5°C)</span>`;
+                if (l.temp >= 38.5) {
+                    badge = `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">Sốt cao (≥38.5°C)</span>`;
+                } else if (l.temp >= 37.5) {
+                    badge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold">Sốt nhẹ (37.5-38.4°C)</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-2.5 font-medium text-slate-700">${l.illnessTitle}</td>
+                        <td class="p-2.5">${l.date}</td>
+                        <td class="p-2.5 font-bold">${l.temp} °C</td>
+                        <td class="p-2.5">${badge}</td>
+                        <td class="p-2.5 text-slate-600">${l.notes || '-'}</td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="confirmDeleteDailyLog('${l.illnessId}', '${l.id}')" title="Xóa dòng này" class="text-slate-400 hover:text-rose-600 p-1">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderChart() {
+            const select = document.getElementById('chartIllnessSelect');
+            if (!select) return;
+
+            select.innerHTML = appData.illnesses.map(i => `<option value="${i.id}">${i.title}</option>`).join('');
+
+            let targetIllness = null;
+            if (select.value) {
+                targetIllness = appData.illnesses.find(i => i.id === select.value);
+            }
+            if (!targetIllness && appData.illnesses.length > 0) {
+                targetIllness = appData.illnesses[0];
+            }
+
+            const canvas = document.getElementById('recoveryTrendChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (chartInstance) chartInstance.destroy();
+
+            if (!targetIllness || !targetIllness.logs || targetIllness.logs.length === 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "#94a3b8";
+                ctx.textAlign = "center";
+                ctx.fillText("Chưa có đủ nhật ký nhiệt độ để hiển thị biểu đồ", canvas.width / 2, canvas.height / 2);
+                renderTempReport();
+                return;
+            }
+
+            const labels = targetIllness.logs.map(l => l.date);
+            const temps = targetIllness.logs.map(l => l.temp);
+            const severities = targetIllness.logs.map(l => l.severity);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Nhiệt độ (°C)',
+                            data: temps,
+                            borderColor: '#e11d48',
+                            backgroundColor: 'rgba(225, 29, 72, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            yAxisID: 'yTemp',
+                            fill: true
+                        },
+                        {
+                            label: 'Mức triệu chứng (1-10)',
+                            data: severities,
+                            borderColor: '#0d9488',
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            borderWidth: 2,
+                            type: 'bar',
+                            yAxisID: 'ySev'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yTemp: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 35.5,
+                            max: 41,
+                            title: { display: true, text: 'Nhiệt độ (°C)' }
+                        },
+                        ySev: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 10,
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Mức độ nặng (1-10)' }
+                        }
+                    }
+                }
+            });
+
+            renderTempReport();
+        }
+
+        function openDoctorReportModal() {
+            document.getElementById('reportPrintDate').textContent = new Date().toLocaleDateString('vi-VN');
+
+            // Render Allergies in report
+            const algContainer = document.getElementById('reportAllergiesList');
+            if (appData.allergies.length === 0) {
+                algContainer.innerHTML = `<p class="text-slate-500 italic">Chưa ghi nhận tiền sử dị ứng thuốc hay thực phẩm nào.</p>`;
+            } else {
+                algContainer.innerHTML = appData.allergies.map(a => `
+                    <p class="text-rose-800">⚠️ <strong>${a.allergen}</strong> (${a.category}): ${a.severity}. ${a.reaction ? `Phản ứng: ${a.reaction}` : ''}</p>
+                `).join('');
+            }
+
+            // Active Illness
+            const illnessContainer = document.getElementById('reportIllnessDetail');
+            const activeIll = appData.illnesses.find(i => i.status === 'treating' || i.status === 'recovering') || appData.illnesses[0];
+            if (!activeIll) {
+                illnessContainer.innerHTML = `<p class="text-slate-500 italic">Không có đợt bệnh nào được chọn.</p>`;
+            } else {
+                illnessContainer.innerHTML = `
+                    <p class="text-slate-800 font-bold text-sm">${activeIll.title} (${activeIll.category})</p>
+                    <p>Ngày bắt đầu: <strong>${activeIll.startDate}</strong> • Bác sĩ khám: <strong>${activeIll.doctor || 'Tự điều trị'}</strong></p>
+                    <p>Mô tả ban đầu: ${activeIll.notes || 'Không ghi chú'}</p>
+                `;
+            }
+
+            // Antibiotics & Meds
+            const abContainer = document.getElementById('reportAntibioticsList');
+            if (appData.antibiotics.length === 0) {
+                abContainer.innerHTML = `<p class="text-slate-500 italic">Chưa sử dụng đơn thuốc nào.</p>`;
+            } else {
+                abContainer.innerHTML = appData.antibiotics.map(a => `
+                    <div class="border-b border-amber-200/50 pb-1.5 last:border-0">
+                        <strong class="text-amber-900">${a.name}</strong> - Liều: ${a.dose} (${a.frequency}). Bắt đầu từ ${a.startDate} trong ${a.totalDays} ngày.
+                        ${a.notes ? `<span class="block text-[11px] text-slate-600">Lưu ý: ${a.notes}</span>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Logs Table
+            const logsContainer = document.getElementById('reportLogsTableBody');
+            let logs = activeIll ? (activeIll.logs || []) : [];
+            if (logs.length === 0) {
+                logsContainer.innerHTML = `<tr><td colspan="5" class="p-2 text-center text-slate-400">Chưa có nhật ký theo dõi.</td></tr>`;
+            } else {
+                logsContainer.innerHTML = logs.map(l => `
+                    <tr>
+                        <td class="border border-slate-200 p-2 font-medium">${l.date}</td>
+                        <td class="border border-slate-200 p-2 font-bold ${l.temp >= 38.5 ? 'text-rose-600' : ''}">${l.temp} °C</td>
+                        <td class="border border-slate-200 p-2">${l.severity}/10</td>
+                        <td class="border border-slate-200 p-2">${l.conditionState === 'improving' ? 'Thuyên giảm' : l.conditionState === 'worse' ? 'Nặng hơn' : 'Không đổi'}</td>
+                        <td class="border border-slate-200 p-2">${l.notes || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('doctorReportModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDoctorReportModal() {
+            document.getElementById('doctorReportModal').classList.add('hidden');
+        }
+
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `Kim_Health_Tracker_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+            showToast("Đã tải tệp sao lưu JSON!");
+        }
+
+        function triggerImportJSON() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && (parsed.illnesses || parsed.antibiotics || parsed.allergies)) {
+                        appData = parsed;
+                        saveData();
+                        showToast("Khôi phục dữ liệu thành công!");
+                    } else {
+                        showToast("File JSON không hợp lệ!", "error");
+                    }
+                } catch(err) {
+                    showToast("Lỗi khi đọc file JSON!", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmClearAllHistory() {
+            openCustomConfirm("Xóa toàn bộ lịch sử", "CẢNH BÁO: Toàn bộ đợt bệnh, nhật ký nhiệt độ, đơn thuốc và dị ứng sẽ bị xóa vĩnh viễn. Bạn có chắc muốn tiếp tục?", () => {
+                appData = {
+                    illnesses: [],
+                    antibiotics: [],
+                    dosesTaken: {},
+                    allergies: []
+                };
+                saveData();
+                showToast("Đã xóa sạch lịch sử dữ liệu!");
+            });
+        }
+
+        function renderAllTabs() {
+            renderIllnessList();
+            renderAntibioticsTab();
+            renderAllergiesTab();
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            saveData();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
