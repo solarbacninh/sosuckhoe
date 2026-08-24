@@ -16,7 +16,6 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
         
-        /* Mobile Touch Active Effects & Prevent Safari Auto-Zoom */
         @media (max-width: 640px) {
             input, select, textarea { font-size: 16px !important; }
             .mobile-bottom-sheet { align-items: flex-end !important; padding: 0 !important; }
@@ -45,15 +44,19 @@
                             <i data-lucide="clock" class="w-3 h-3 text-emerald-300"></i>
                             <span id="liveClockText">Đang tải thời gian...</span>
                         </p>
-                        <span id="cloudStatusBadge" class="bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 transition-all">
+                        <span id="cloudStatusBadge" onclick="openCloudConfigModal()" title="Nhấn để xem trạng thái Cloud Database" class="bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 transition-all cursor-pointer hover:bg-emerald-500/30">
                             <span id="cloudStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            <span id="cloudStatusText">Tự động lưu: Đã bật</span>
+                            <span id="cloudStatusText">Cloud DB: Đang kết nối...</span>
                         </span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-1.5">
+                <button onclick="openCloudConfigModal()" title="Cài đặt Cloud DB" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 touch-shrink">
+                    <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-300"></i>
+                    <span class="hidden sm:inline">Cấu hình Cloud</span>
+                </button>
                 <button onclick="exportDatabaseJSON()" title="Tải tệp sao lưu DB" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 touch-shrink">
                     <i data-lucide="database" class="w-4 h-4 text-emerald-300"></i>
                     <span class="hidden sm:inline">Sao Lưu DB</span>
@@ -145,7 +148,6 @@
 
         <!-- SECTION 1: Illness Episodes & Daily Temperature Logs -->
         <section id="section-episodes" class="space-y-4">
-            <!-- Header actions for Illness tab -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                     <h2 class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
@@ -221,7 +223,7 @@
                 <div class="flex flex-col sm:flex-row gap-2">
                     <div class="relative flex-1">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-                        <input type="text" id="medSearchQuery" oninput="filterMedDatabase()" placeholder="Nhập tên thuốc (Hapacol, Augmentin, Prospan, Efferalgan...)" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-teal-500">
+                        <input type="text" id="medSearchQuery" oninput="filterMedDatabase()" placeholder="Nhập tên thuốc (Hapacol, Augmentin, Prospan, Zinnat, Efferalgan...)" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-teal-500">
                     </div>
                     <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs">
                         <button onclick="setMedCategoryFilter('all')" id="medCat-all" class="med-cat-btn px-3 py-1.5 rounded-xl bg-teal-600 text-white font-bold shrink-0">Tất cả</button>
@@ -229,6 +231,8 @@
                         <button onclick="setMedCategoryFilter('Kháng sinh')" id="medCat-Kháng sinh" class="med-cat-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Kháng sinh</button>
                         <button onclick="setMedCategoryFilter('Ho - Phế quản')" id="medCat-Ho - Phế quản" class="med-cat-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Siro ho</button>
                         <button onclick="setMedCategoryFilter('Tiêu hóa')" id="medCat-Tiêu hóa" class="med-cat-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Tiêu hóa</button>
+                        <button onclick="setMedCategoryFilter('Dị ứng')" id="medCat-Dị ứng" class="med-cat-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Dị ứng</button>
+                        <button onclick="setMedCategoryFilter('Bổ sung')" id="medCat-Bổ sung" class="med-cat-btn px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Bổ sung & Vitamin</button>
                     </div>
                 </div>
 
@@ -387,7 +391,7 @@
                             <option value="Hô hấp">Hô hấp (Mũi, họng, họng)</option>
                             <option value="Nhiễm trùng">Nhiễm trùng / Siêu vi</option>
                             <option value="Tiêu hóa">Tiêu hóa / Dạ dày</option>
-                            <option value="Dị ứng">Dị ứng / Mẩn ngứa</option>
+                            <option value="Dị ứng">Dị ứng / Mẫn ngứa</option>
                             <option value="Khác">Khác</option>
                         </select>
                     </div>
@@ -626,7 +630,7 @@
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Mức độ nguy hiểm</label>
                         <select id="algSeverity" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-amber-500">
-                            <option value="Nhẹ">Nhẹ (Nổi mẩn ngứa nhẹ)</option>
+                            <option value="Nhẹ">Nhẹ (Nổi mẫn ngứa nhẹ)</option>
                             <option value="Trung bình">Trung bình (Sưng phù, mề đày)</option>
                             <option value="Rất nguy hiểm">Rất nguy hiểm (Phản vệ/Khó thở)</option>
                         </select>
@@ -643,6 +647,30 @@
                     <button type="submit" class="px-5 py-2 bg-amber-600 font-bold rounded-xl text-white shadow">Lưu Hồ Sơ Dị Ứng</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Cloud Database Config Modal -->
+    <div id="cloudConfigModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
+                    <i data-lucide="cloud-cog" class="w-5 h-5 text-sky-600"></i>
+                    <span>Trạng Thái Cloud Database</span>
+                </h3>
+                <button onclick="closeCloudConfigModal()" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="text-xs text-slate-600 space-y-2">
+                <div id="cloudDetailStatus" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-medium">
+                    🟢 Đã tích hợp sẵn dự án Cloud: <strong>so-suc-khoe-mi</strong>
+                </div>
+                <p>Mọi thay đổi dữ liệu của bạn sẽ được tự động lưu lên Cloud Firestore và đồng bộ trên tất cả thiết bị cùng lúc.</p>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100 text-xs">
+                <button onclick="closeCloudConfigModal()" class="px-4 py-2 bg-sky-600 font-bold text-white rounded-xl shadow">Đóng</button>
+            </div>
         </div>
     </div>
 
@@ -698,8 +726,19 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Tự động sử dụng cấu hình dự án so-suc-khoe-mi
+        const HARDCODED_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAvrDLF_4mrTNiKvcdWbpcgSRK4VNFpvDU",
+            authDomain: "so-suc-khoe-mi.firebaseapp.com",
+            projectId: "so-suc-khoe-mi",
+            storageBucket: "so-suc-khoe-mi.firebasestorage.app",
+            messagingSenderId: "206021429233",
+            appId: "1:206021429233:web:0498be5e1b4de4b8f2e650",
+            measurementId: "G-7HXTCZ0Z04"
+        };
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'mi-health-tracker';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        let firebaseConfig = HARDCODED_FIREBASE_CONFIG;
 
         let db = null;
         let auth = null;
@@ -736,7 +775,7 @@
                     return;
                 }
 
-                // Strictly standard public data path
+                // Cloud Document Path
                 cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'app_state', 'mi_health_data');
 
                 // Realtime Firestore Listener
@@ -753,9 +792,9 @@
                 });
 
                 const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                window.updateCloudStatusDisplay('synced', `Tự động lưu: Đã bật [${nowStr}]`);
+                window.updateCloudStatusDisplay('synced', `Cloud DB: Đã kết nối [${nowStr}]`);
             } catch (err) {
-                console.warn("Chưa kết nối Cloud, chuyển sang Local DB:", err);
+                console.warn("Chưa bật Anonymous Auth hoặc Firestore Rules, dùng Local DB:", err);
                 window.updateCloudStatusDisplay('synced', 'Tự động lưu: Local DB');
             }
         };
@@ -775,7 +814,7 @@
                 };
                 await setDoc(cloudDocRef, payload, { merge: true });
                 const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                window.updateCloudStatusDisplay('synced', `Đã tự động lưu [${nowStr}]`);
+                window.updateCloudStatusDisplay('synced', `Đã đồng bộ Cloud [${nowStr}]`);
             } catch (err) {
                 console.warn("Lỗi lưu Cloud:", err);
                 window.updateCloudStatusDisplay('synced', 'Đã lưu máy (Ngoại tuyến)');
@@ -790,13 +829,13 @@
 
             textEl.innerText = text;
             if (status === 'saving') {
-                badge.className = "bg-amber-500/20 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400/30 flex items-center gap-1";
+                badge.className = "bg-amber-500/20 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400/30 flex items-center gap-1 cursor-pointer";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping";
             } else if (status === 'synced') {
-                badge.className = "bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1";
+                badge.className = "bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 cursor-pointer";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
             } else {
-                badge.className = "bg-slate-500/20 text-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-400/30 flex items-center gap-1";
+                badge.className = "bg-slate-500/20 text-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-400/30 flex items-center gap-1 cursor-pointer";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-slate-400";
             }
         };
@@ -808,17 +847,28 @@
 
     <!-- Main Application Logic Script -->
     <script>
-        // Preset Medicine Database
+        // Medicine Database
         const MEDICINE_DATABASE = [
-            { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần (cách 4-6 tiếng)", isAntibiotic: false, notes: "Hạ sốt, giảm đau cho trẻ em", keywords: ["hapacol", "paracetamol", "sốt"] },
-            { name: "Efferalgan 500mg", category: "Hạ sốt", dosageRef: "1 viên sủi/lần", isAntibiotic: false, notes: "Hòa tan vào nước uống khi sốt ≥ 38.5°C", keywords: ["efferalgan", "sủi", "sốt"] },
-            { name: "Augmentin 625mg", category: "Kháng sinh", dosageRef: "1 viên x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh nhóm Amoxicillin, uống đúng giờ", keywords: ["augmentin", "kháng sinh"] },
-            { name: "Zinnat 250mg", category: "Kháng sinh", dosageRef: "1 viên x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh Cefuroxime đường uống", keywords: ["zinnat", "kháng sinh"] },
-            { name: "Siro Prospan", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro ho thảo dược cao lá thường xuân", keywords: ["prospan", "ho", "siro"] },
-            { name: "Siro Solmux Broncho", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", isAntibiotic: false, notes: "Long đờm, giãn phế quản", keywords: ["solmux", "đờm"] },
-            { name: "Smecta", category: "Tiêu hóa", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: false, notes: "Pha nước uống khi tiêu chảy, rối loạn tiêu hóa", keywords: ["smecta", "tiêu chảy"] },
-            { name: "Oresol 245", category: "Tiêu hóa", dosageRef: "Pha 1 gói với 200ml nước", isAntibiotic: false, notes: "Bù nước và điện giải khi sốt hoặc tiêu chảy", keywords: ["oresol", "bù nước"] },
-            { name: "Telfast 60mg", category: "Dị ứng", dosageRef: "1 viên/ngày", isAntibiotic: false, notes: "Thuốc chống dị ứng, giảm mẩn ngứa", keywords: ["telfast", "dị ứng"] }
+            { name: "Hapacol 80mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 7-10kg)", isAntibiotic: false, notes: "Paracetamol cho trẻ sơ sinh & nhỏ tuổi", keywords: ["hapacol", "paracetamol", "sốt", "80mg"] },
+            { name: "Hapacol 150mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 10-15kg)", isAntibiotic: false, notes: "Hạ sốt, giảm đau vị cam dễ uống", keywords: ["hapacol", "paracetamol", "sốt", "150mg"] },
+            { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 16-25kg)", isAntibiotic: false, notes: "Hạ sốt, giảm đau trẻ em (cách 4-6 tiếng)", keywords: ["hapacol", "paracetamol", "sốt", "250mg"] },
+            { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1-2 viên/lần", isAntibiotic: false, notes: "Hạ sốt, giảm đau cho người lớn & thiếu niên", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
+            { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên/lần", isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt"] },
+            { name: "Efferalgan 150mg (Gói/Sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 10-15kg)", isAntibiotic: false, notes: "Hạ sốt nhanh hòa tan trong nước", keywords: ["efferalgan", "sốt", "sủi"] },
+            { name: "Efferalgan 250mg (Gói/Sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 16-25kg)", isAntibiotic: false, notes: "Hạ sốt giảm đau dạng sủi/bột", keywords: ["efferalgan", "sốt"] },
+            { name: "Efferalgan 500mg (Sủi)", category: "Hạ sốt", dosageRef: "1 viên sủi/lần", isAntibiotic: false, notes: "Hòa tan với nước khi sốt ≥ 38.5°C", keywords: ["efferalgan", "sủi", "sốt", "500mg"] },
+            { name: "Siro Nurofen 100mg/5ml (Ibuprofen)", category: "Hạ sốt", dosageRef: "5ml/lần (theo cân nặng)", isAntibiotic: false, notes: "Hạ sốt kháng viêm khi Paracetamol kém đáp ứng", keywords: ["nurofen", "ibuprofen", "sốt cao", "kháng viêm"] },
+            { name: "Panadol Trẻ Em (Siro)", category: "Hạ sốt", dosageRef: "5-10ml/lần", isAntibiotic: false, notes: "Siro hạ sốt vị dâu dễ uống", keywords: ["panadol", "sốt", "paracetamol"] },
+            { name: "Augmentin 250mg/31.25mg", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", isAntibiotic: true, notes: "Amoxicillin + Acid Clavulanic cho trẻ em", keywords: ["augmentin", "kháng sinh", "250mg"] },
+            { name: "Augmentin 500mg/62.5mg", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh hô hấp tai mũi họng", keywords: ["augmentin", "kháng sinh", "500mg"] },
+            { name: "Augmentin 625mg (Viên)", category: "Kháng sinh", dosageRef: "1 viên x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh phổ rộng, uống sau ăn", keywords: ["augmentin", "kháng sinh", "625mg"] },
+            { name: "Zinnat 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: true, notes: "Cefuroxime axetil điều trị viêm phế quản, tai mũi họng", keywords: ["zinnat", "cefuroxime", "kháng sinh"] },
+            { name: "Zinnat 250mg (Viên/Gói)", category: "Kháng sinh", dosageRef: "1 viên/gói x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh Cefuroxime đường uống", keywords: ["zinnat", "kháng sinh", "250mg"] },
+            { name: "Zinnat 500mg (Viên)", category: "Kháng sinh", dosageRef: "1 viên x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh thế hệ 2 cho nhiễm khuẩn nặng", keywords: ["zinnat", "kháng sinh", "500mg"] },
+            { name: "Siro Prospan", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro ho thảo dược nhập khẩu Đức", keywords: ["prospan", "ho", "siro", "thảo dược"] },
+            { name: "Siro Astex", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro ho Bệnh viện Nhi Đồng 1", keywords: ["astex", "ho", "húng chanh"] },
+            { name: "Smecta 3g", category: "Tiêu hóa", dosageRef: "1 gói x 2-3 lần/ngày", isAntibiotic: false, notes: "Bao niêm mạc ruột khi tiêu chảy", keywords: ["smecta", "tiêu chảy", "đi ngoài"] },
+            { name: "Enterogermina (Ống)", category: "Tiêu hóa", dosageRef: "1-2 ống/ngày", isAntibiotic: false, notes: "Men vi sinh dạng ống uống phục hồi đường ruột", keywords: ["enterogermina", "men vi sinh"] }
         ];
 
         let appData = {
@@ -860,7 +910,7 @@
 
         function loadData() {
             try {
-                const stored = localStorage.getItem('mi_health_tracker_data_v3') || localStorage.getItem('kim_health_tracker_data_v2');
+                const stored = localStorage.getItem('mi_health_tracker_data_v3');
                 if (stored) {
                     appData = JSON.parse(stored);
                 }
@@ -885,9 +935,6 @@
             autoSaveTimer = setTimeout(() => {
                 if (typeof window.syncDataToCloud === 'function') {
                     window.syncDataToCloud(appData);
-                } else if (window.updateCloudStatusDisplay) {
-                    const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    window.updateCloudStatusDisplay('synced', `Đã tự động lưu [${nowStr}]`);
                 }
             }, 300);
 
@@ -908,6 +955,16 @@
             }
         }
 
+        function openCloudConfigModal() {
+            const el = document.getElementById('cloudConfigModal');
+            if (el) el.classList.remove('hidden');
+        }
+
+        function closeCloudConfigModal() {
+            const el = document.getElementById('cloudConfigModal');
+            if (el) el.classList.add('hidden');
+        }
+
         function populateMedSuggestionsList() {
             const datalist = document.getElementById('medSuggestionsList');
             if (!datalist) return;
@@ -918,7 +975,6 @@
             const val = document.getElementById('rxName').value.trim();
             checkRxInputAllergy();
 
-            // If selected or typed name matches a medicine in database, auto fill dosage and antibiotic flag
             const matched = MEDICINE_DATABASE.find(m => m.name.toLowerCase() === val.toLowerCase());
             if (matched) {
                 const dosageInput = document.getElementById('rxDosage');
