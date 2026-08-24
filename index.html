@@ -26,7 +26,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-24 sm:pb-16">
 
-    <!-- Top Header -->
+    <!-- Top Header Bar -->
     <header class="bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-700 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-6xl mx-auto px-3.5 py-3 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-2.5">
@@ -38,24 +38,24 @@
                         <span>Sổ Tay Sức Khỏe</span>
                         <span class="bg-emerald-400/30 text-emerald-100 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border border-emerald-300/30">Mi</span>
                     </h1>
-                    <!-- Real-Time Auto Clock & Cloud DB Status Display -->
+                    <!-- Real-Time Auto Clock & Firebase Project Status Display -->
                     <div class="flex flex-wrap items-center gap-2 mt-0.5">
                         <p id="liveClockDisplay" class="text-[11px] sm:text-xs text-teal-100 font-medium flex items-center gap-1">
                             <i data-lucide="clock" class="w-3 h-3 text-emerald-300"></i>
                             <span id="liveClockText">Đang tải thời gian...</span>
                         </p>
-                        <span id="cloudStatusBadge" onclick="openCloudConfigModal()" title="Nhấn để xem trạng thái Cloud Database" class="bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 transition-all cursor-pointer hover:bg-emerald-500/30">
+                        <span id="cloudStatusBadge" onclick="openCloudConfigModal()" title="Nhấn để cấu hình kết nối Firebase" class="bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 transition-all cursor-pointer hover:bg-emerald-500/30">
                             <span id="cloudStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            <span id="cloudStatusText">Cloud DB: Đang kết nối...</span>
+                            <span id="cloudStatusText">Cloud: sosuckhoemi-60f6f</span>
                         </span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-1.5">
-                <button onclick="openCloudConfigModal()" title="Cài đặt Cloud DB" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 touch-shrink">
+                <button onclick="openCloudConfigModal()" title="Cài đặt Firebase Config" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 touch-shrink">
                     <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-300"></i>
-                    <span class="hidden sm:inline">Cấu hình Cloud</span>
+                    <span class="hidden sm:inline">Firebase Config</span>
                 </button>
                 <button onclick="exportDatabaseJSON()" title="Tải tệp sao lưu DB" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 touch-shrink">
                     <i data-lucide="database" class="w-4 h-4 text-emerald-300"></i>
@@ -388,7 +388,7 @@
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Nhóm bệnh</label>
                         <select id="illCategory" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
-                            <option value="Hô hấp">Hô hấp (Mũi, họng, họng)</option>
+                            <option value="Hô hấp">Hô hấp (Mũi, họng, phế quản)</option>
                             <option value="Nhiễm trùng">Nhiễm trùng / Siêu vi</option>
                             <option value="Tiêu hóa">Tiêu hóa / Dạ dày</option>
                             <option value="Dị ứng">Dị ứng / Mẫn ngứa</option>
@@ -650,26 +650,32 @@
         </div>
     </div>
 
-    <!-- MODAL 5: Cloud Database Config Modal -->
+    <!-- MODAL 5: Cloud Database Config Modal for sosuckhoemi-60f6f -->
     <div id="cloudConfigModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
         <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
                     <i data-lucide="cloud-cog" class="w-5 h-5 text-sky-600"></i>
-                    <span>Trạng Thái Cloud Database</span>
+                    <span>Kết Nối Firebase: sosuckhoemi-60f6f</span>
                 </h3>
                 <button onclick="closeCloudConfigModal()" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <div class="text-xs text-slate-600 space-y-2">
+            <div class="text-xs text-slate-600 space-y-2.5">
                 <div id="cloudDetailStatus" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-medium">
-                    🟢 Đã tích hợp sẵn dự án Cloud: <strong>so-suc-khoe-mi</strong>
+                    🟢 Đã mặc định cấu hình dự án Firebase: <strong>sosuckhoemi-60f6f</strong>
                 </div>
-                <p>Mọi thay đổi dữ liệu của bạn sẽ được tự động lưu lên Cloud Firestore và đồng bộ trên tất cả thiết bị cùng lúc.</p>
+                <p>Nếu bạn muốn cập nhật khóa `apiKey` hoặc cấu hình riêng từ dự án Firebase `sosuckhoemi-60f6f`, hãy dán đoạn mã JSON `firebaseConfig` vào ô dưới đây:</p>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Chuỗi Cấu Hình Firebase Config (JSON):</label>
+                    <textarea id="customFirebaseConfigInput" rows="5" placeholder='{"apiKey": "AIzaSy...", "authDomain": "sosuckhoemi-60f6f.firebaseapp.com", "projectId": "sosuckhoemi-60f6f", ...}' class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-mono focus:outline-none focus:border-sky-500"></textarea>
+                </div>
             </div>
 
             <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100 text-xs">
-                <button onclick="closeCloudConfigModal()" class="px-4 py-2 bg-sky-600 font-bold text-white rounded-xl shadow">Đóng</button>
+                <button onclick="closeCloudConfigModal()" class="px-4 py-2 bg-slate-100 font-bold rounded-xl text-slate-600">Đóng</button>
+                <button onclick="saveCustomCloudConfig()" class="px-4 py-2 bg-sky-600 font-bold text-white rounded-xl shadow">Lưu Cấu Hình</button>
             </div>
         </div>
     </div>
@@ -726,19 +732,29 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Tự động sử dụng cấu hình dự án so-suc-khoe-mi
-        const HARDCODED_FIREBASE_CONFIG = {
+        // =========================================================================
+        // 📌 CẤU HÌNH FIREBASE MẶC ĐỊNH CHO DỰ ÁN sosuckhoemi-60f6f:
+        // =========================================================================
+        const DEFAULT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAvrDLF_4mrTNiKvcdWbpcgSRK4VNFpvDU",
-            authDomain: "so-suc-khoe-mi.firebaseapp.com",
-            projectId: "so-suc-khoe-mi",
-            storageBucket: "so-suc-khoe-mi.firebasestorage.app",
+            authDomain: "sosuckhoemi-60f6f.firebaseapp.com",
+            projectId: "sosuckhoemi-60f6f",
+            storageBucket: "sosuckhoemi-60f6f.firebasestorage.app",
             messagingSenderId: "206021429233",
             appId: "1:206021429233:web:0498be5e1b4de4b8f2e650",
-            measurementId: "G-7HXTCZ0Z04"
+            measurementId: "G-JV7E16S8PK"
         };
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'mi-health-tracker';
-        let firebaseConfig = HARDCODED_FIREBASE_CONFIG;
+        let firebaseConfig = DEFAULT_FIREBASE_CONFIG;
+
+        // Check custom user config in localStorage
+        try {
+            const savedConfig = localStorage.getItem('mi_custom_firebase_config');
+            if (savedConfig) {
+                firebaseConfig = JSON.parse(savedConfig);
+            }
+        } catch(e) {}
 
         let db = null;
         let auth = null;
@@ -775,7 +791,7 @@
                     return;
                 }
 
-                // Cloud Document Path
+                // Strictly standard public data path
                 cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'app_state', 'mi_health_data');
 
                 // Realtime Firestore Listener
@@ -788,21 +804,21 @@
                     }
                 }, (err) => {
                     console.warn("Lỗi đồng bộ Cloud Firestore:", err);
-                    window.updateCloudStatusDisplay('synced', 'Tự động lưu: Local DB');
+                    window.updateCloudStatusDisplay('synced', 'Cloud: sosuckhoemi-60f6f (Local Cache)');
                 });
 
                 const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                window.updateCloudStatusDisplay('synced', `Cloud DB: Đã kết nối [${nowStr}]`);
+                window.updateCloudStatusDisplay('synced', `Cloud: sosuckhoemi-60f6f [${nowStr}]`);
             } catch (err) {
                 console.warn("Chưa bật Anonymous Auth hoặc Firestore Rules, dùng Local DB:", err);
-                window.updateCloudStatusDisplay('synced', 'Tự động lưu: Local DB');
+                window.updateCloudStatusDisplay('synced', 'Cloud: sosuckhoemi-60f6f (Offline)');
             }
         };
 
         window.syncDataToCloud = async function(dataToSync) {
             if (!cloudDocRef) {
                 const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                window.updateCloudStatusDisplay('synced', `Đã tự động lưu [${nowStr}]`);
+                window.updateCloudStatusDisplay('synced', `Đã lưu máy [${nowStr}]`);
                 return;
             }
 
@@ -810,11 +826,12 @@
                 const payload = {
                     ...dataToSync,
                     updatedAt: Date.now(),
-                    targetWebsite: "https://solarbacninh.github.io/MI/"
+                    targetWebsite: "https://solarbacninh.github.io/MI/",
+                    projectId: "sosuckhoemi-60f6f"
                 };
                 await setDoc(cloudDocRef, payload, { merge: true });
                 const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                window.updateCloudStatusDisplay('synced', `Đã đồng bộ Cloud [${nowStr}]`);
+                window.updateCloudStatusDisplay('synced', `Đã lưu Cloud sosuckhoemi-60f6f [${nowStr}]`);
             } catch (err) {
                 console.warn("Lỗi lưu Cloud:", err);
                 window.updateCloudStatusDisplay('synced', 'Đã lưu máy (Ngoại tuyến)');
@@ -963,6 +980,23 @@
         function closeCloudConfigModal() {
             const el = document.getElementById('cloudConfigModal');
             if (el) el.classList.add('hidden');
+        }
+
+        function saveCustomCloudConfig() {
+            const input = document.getElementById('customFirebaseConfigInput').value.trim();
+            if (!input) {
+                showToast("Vui lòng nhập chuỗi JSON Firebase Config!");
+                return;
+            }
+
+            try {
+                JSON.parse(input);
+                localStorage.setItem('mi_custom_firebase_config', input);
+                showToast("Đã lưu Cấu hình Cloud! Đang làm mới...");
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (e) {
+                showToast("Định dạng JSON không hợp lệ!");
+            }
         }
 
         function populateMedSuggestionsList() {
