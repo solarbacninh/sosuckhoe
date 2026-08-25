@@ -49,7 +49,7 @@
         @media (max-width: 640px) {
             input, select, textarea { font-size: 16px !important; }
             .mobile-bottom-sheet { align-items: flex-end !important; padding: 0 !important; }
-            .mobile-bottom-sheet > div { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; max-height: 90vh !important; border-top-left-radius: 1.75rem !important; border-top-right-radius: 1.75rem !important; }
+            .mobile-bottom-sheet > div { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; max-height: 92vh !important; border-top-left-radius: 1.75rem !important; border-top-right-radius: 1.75rem !important; }
         }
         .touch-shrink { transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1); }
         .touch-shrink:active { transform: scale(0.95); }
@@ -65,7 +65,6 @@
             background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #042f2e 100%);
         }
 
-        /* Mobile Safe Area Insets for iOS & Android Gesture Bars */
         .safe-pb-bottom { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 10px)); }
         .safe-nav-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 6px)); }
     </style>
@@ -109,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- Header Action Buttons (Scrollable horizontally on small devices) -->
+            <!-- Header Action Buttons -->
             <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto custom-scrollbar max-w-full pb-0.5">
                 <button onclick="openChildrenManagerModal()" title="Quản lý danh sách các bé" class="bg-teal-400/20 hover:bg-teal-400/30 text-emerald-100 text-xs font-bold p-2.5 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1 border border-teal-300/30 touch-shrink shrink-0 min-h-[40px]">
                     <i data-lucide="users" class="w-4 h-4 text-emerald-300"></i>
@@ -167,14 +166,14 @@
     <!-- Main Content Container -->
     <main class="max-w-6xl mx-auto px-3.5 pt-3.5 space-y-3.5 sm:space-y-4 flex-grow w-full">
 
-        <!-- Quick Child Switcher Bar (1-Tap Horizontal Selection) -->
+        <!-- Quick Child Switcher Bar -->
         <div id="quickChildBarSection" class="bg-white/90 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-2 overflow-x-auto custom-scrollbar">
             <span class="text-[11px] font-extrabold text-teal-800 uppercase tracking-wider shrink-0 flex items-center gap-1 pl-1">
                 <i data-lucide="baby" class="w-4 h-4 text-teal-600"></i>
                 <span class="hidden sm:inline">Chọn bé:</span>
             </span>
             <div id="quickChildChipsContainer" class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar flex-1">
-                <!-- Dynamically populated chips e.g. [👶 Bé Mi] [👶 Gia Bảo] -->
+                <!-- Dynamically populated chips -->
             </div>
             <button onclick="openChildrenManagerModal()" title="Thêm bé mới hoặc quản lý danh sách" class="bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold px-2.5 py-1.5 rounded-xl border border-teal-200/80 flex items-center gap-1 shrink-0 touch-shrink">
                 <i data-lucide="plus" class="w-3.5 h-3.5 text-teal-600"></i>
@@ -258,7 +257,6 @@
                 </button>
             </div>
 
-            <!-- List of Illness Episodes -->
             <div id="illnessList" class="space-y-3.5 sm:space-y-4">
                 <!-- Dynamically populated -->
             </div>
@@ -393,33 +391,63 @@
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-1 py-1.5 flex justify-around items-center z-20 shadow-2xl">
-        <button id="mobile-nav-episodes" onclick="switchTab('episodes')" class="flex flex-col items-center py-1 px-2 rounded-xl text-teal-700 font-extrabold transition touch-shrink min-w-[55px]">
+    <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 px-1 py-1.5 safe-nav-bottom flex justify-around items-center z-40 shadow-[0_-5px_25px_rgba(0,0,0,0.08)]">
+        <button id="mobile-nav-episodes" onclick="switchTab('episodes')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl bg-teal-50 text-teal-700 font-extrabold transition touch-shrink min-w-[58px] relative shadow-sm">
             <i data-lucide="activity" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Đợt bệnh</span>
+            <span class="text-[10px] mt-0.5 font-bold">Đợt bệnh</span>
         </button>
-        <button id="mobile-nav-todaySchedule" onclick="switchTab('todaySchedule')" class="flex flex-col items-center py-1 px-2 rounded-xl text-slate-400 font-semibold transition touch-shrink min-w-[55px] relative">
+        <button id="mobile-nav-todaySchedule" onclick="switchTab('todaySchedule')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px] relative">
             <i data-lucide="clock" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Hôm nay</span>
-            <span id="mobilePendingMedsBadge" class="hidden absolute top-0.5 right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-white">0</span>
+            <span class="text-[10px] mt-0.5 font-bold">Hôm nay</span>
+            <span id="mobilePendingMedsBadge" class="hidden absolute top-0.5 right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border-2 border-white shadow-sm">0</span>
         </button>
-        <button id="mobile-nav-prescriptions" onclick="switchTab('prescriptions')" class="flex flex-col items-center py-1 px-2 rounded-xl text-slate-400 font-semibold transition touch-shrink min-w-[55px]">
+        <button id="mobile-nav-prescriptions" onclick="switchTab('prescriptions')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
             <i data-lucide="pill" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Đơn thuốc</span>
+            <span class="text-[10px] mt-0.5 font-bold">Đơn thuốc</span>
         </button>
-        <button id="mobile-nav-chartTab" onclick="switchTab('chartTab')" class="flex flex-col items-center py-1 px-2 rounded-xl text-slate-400 font-semibold transition touch-shrink min-w-[55px]">
+        <button id="mobile-nav-chartTab" onclick="switchTab('chartTab')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
             <i data-lucide="line-chart" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Biểu đồ</span>
+            <span class="text-[10px] mt-0.5 font-bold">Biểu đồ</span>
         </button>
-        <button id="mobile-nav-med-search" onclick="switchTab('med-search')" class="flex flex-col items-center py-1 px-2 rounded-xl text-slate-400 font-semibold transition touch-shrink min-w-[55px]">
+        <button id="mobile-nav-med-search" onclick="switchTab('med-search')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
             <i data-lucide="search" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Tra thuốc</span>
+            <span class="text-[10px] mt-0.5 font-bold">Tra thuốc</span>
         </button>
+    </div>
+
+    <!-- MODAL 0A: QUICK CHILD SWITCHER BOTTOM SHEET -->
+    <div id="quickChildSwitcherModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
+        <div class="bg-white rounded-3xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div class="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-1"></div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
+                    <div class="p-2 bg-teal-50 text-teal-600 rounded-xl">
+                        <i data-lucide="baby" class="w-5 h-5"></i>
+                    </div>
+                    <span>Chọn Bé Đang Xem Sổ Sức Khỏe</span>
+                </h3>
+                <button onclick="closeQuickChildSwitcher()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="quickChildCardsContainer" class="space-y-2.5">
+                <!-- Filled dynamically -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button onclick="openChildrenManagerModal(); closeQuickChildSwitcher();" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition touch-shrink">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-teal-600"></i>
+                    <span>+ Thêm Bé Mới Hoặc Chỉnh Sửa Hồ Sơ</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL 0: MULTI-CHILD PROFILE MANAGER & SWITCHER -->
     <div id="childrenManagerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+            <div class="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
                     <div class="p-2 bg-teal-50 text-teal-600 rounded-xl">
@@ -553,21 +581,21 @@
         </div>
     </div>
 
-    <!-- MODAL: Fever Dosage Calculator (Enhanced with Age & Weight) -->
+    <!-- MODAL: Fever Dosage Calculator -->
     <div id="dosageCalcModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+            <div class="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
                     <i data-lucide="calculator" class="w-5 h-5 text-emerald-600"></i>
-                    <span>Tính Liều Paracetamol Theo Cân Nặng & Tuổi</span>
+                    <span>Tính Liều Paracetamol & Gợi Ý Thuốc Theo Cân Nặng</span>
                 </h3>
                 <button onclick="closeDosageCalcModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div class="space-y-3 text-xs">
-                <!-- Age Tag & Quick Select inside calculator -->
+            <div class="space-y-3.5 text-xs">
                 <div class="bg-teal-50/80 p-3 rounded-2xl border border-teal-100 space-y-2">
                     <div class="flex justify-between items-center">
                         <span id="dosageCalcWeightLabel" class="font-bold text-teal-950">Độ tuổi & Cân nặng bé đang chọn:</span>
@@ -575,13 +603,13 @@
                     </div>
 
                     <div class="flex flex-wrap gap-1">
-                        <button type="button" onclick="setQuickAgeInCalc(3, 6)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">3T (6kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(6, 8)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">6T (8kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(12, 10)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">1t (10kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(24, 12)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">2t (12kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(36, 14)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">3t (14kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(60, 18)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">5t (18kg)</button>
-                        <button type="button" onclick="setQuickAgeInCalc(120, 30)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">10t (30kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(3, 6)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">3T (6kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(6, 8)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">6T (8kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(12, 10)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">1t (10kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(24, 12)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">2t (12kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(36, 14)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">3t (14kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(60, 18)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">5t (18kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(120, 30)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold touch-shrink">10t (30kg)</button>
                     </div>
                 </div>
 
@@ -591,34 +619,39 @@
                 </div>
 
                 <div id="feverAgeWarningBox" class="hidden p-3 bg-rose-50 text-rose-800 rounded-2xl border border-rose-200 font-extrabold text-[11px] space-y-1">
-                    <!-- Under 3 months warning if triggered -->
                 </div>
 
-                <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200/80 space-y-2">
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-3.5 rounded-2xl shadow-md space-y-1.5">
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-950 font-bold">Liều Paracetamol khuyến cáo:</span>
-                        <strong id="calcDoseMg" class="text-emerald-800 font-black text-sm sm:text-base">120 - 180 mg / lần</strong>
+                        <span class="font-extrabold text-xs opacity-90">Liều Paracetamol chuẩn (10-15 mg/kg):</span>
+                        <strong id="calcDoseMg" class="font-black text-base sm:text-lg">120 - 180 mg / lần</strong>
                     </div>
 
-                    <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-bold text-xs">
-                        <span id="calcDoseMlSyrup">Hoặc: 5.0 - 7.5 ml (Siro 120mg/5ml)</span>
+                    <div class="bg-white/20 p-2 rounded-xl border border-white/30 text-white font-bold text-xs">
+                        <span id="calcDoseMlSyrup">Siro (120mg/5ml): 5.0 - 7.5 ml / lần</span>
                     </div>
 
-                    <p class="text-[11px] text-emerald-800 italic">Chuẩn y tế: 10 - 15 mg / kg cân nặng mỗi lần. Mỗi lần uống cách nhau 4 - 6 tiếng (tối đa 4 lần/ngày).</p>
+                    <p class="text-[10px] opacity-80 italic">• Uống khi nhiệt độ ≥ 38.5°C, các lần cách nhau tối thiểu 4 - 6 tiếng (tối đa 4 lần/ngày).</p>
                 </div>
 
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-[11px] space-y-1">
-                    <span class="font-bold text-slate-800 block">💡 Gợi ý dạng thuốc phù hợp:</span>
-                    <p id="feverFormSuggest" class="text-slate-700 font-semibold">• Đang tính toán...</p>
+                <!-- DYNAMICALLY FILTERED SUITABLE MEDICINES LIST -->
+                <div class="space-y-2 pt-1">
+                    <h4 class="font-extrabold text-slate-800 text-xs flex items-center justify-between">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i>
+                            <span>Danh Sách Thuốc Phù Hợp Chuẩn Cho Cân Nặng Này:</span>
+                        </span>
+                        <span id="calcMatchesCountBadge" class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.2 rounded-full">0 thuốc phù hợp</span>
+                    </h4>
+
+                    <div id="feverSuggestedMedsContainer" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                        <!-- Filled dynamically by JavaScript -->
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-                <button onclick="addCalculatedDoseToPrescription()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 font-extrabold text-white text-xs rounded-xl shadow flex items-center gap-1 touch-shrink">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                    <span>+ Thêm Vào Đơn Thuốc</span>
-                </button>
-                <button onclick="closeDosageCalcModal()" class="px-4 py-2 bg-slate-200 font-bold text-slate-700 text-xs rounded-xl">Đóng</button>
+            <div class="flex justify-end items-center pt-2 border-t border-slate-100">
+                <button onclick="closeDosageCalcModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs rounded-xl">Đóng Cửa Sổ</button>
             </div>
         </div>
     </div>
@@ -752,73 +785,39 @@
                     </div>
                 </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 px-1 py-1.5 safe-nav-bottom flex justify-around items-center z-40 shadow-[0_-5px_25px_rgba(0,0,0,0.08)]">
-        <button id="mobile-nav-episodes" onclick="switchTab('episodes')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl bg-teal-50 text-teal-700 font-extrabold transition touch-shrink min-w-[58px] relative shadow-sm">
-            <i data-lucide="activity" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5 font-bold">Đợt bệnh</span>
-        </button>
-        <button id="mobile-nav-todaySchedule" onclick="switchTab('todaySchedule')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px] relative">
-            <i data-lucide="clock" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5 font-bold">Hôm nay</span>
-            <span id="mobilePendingMedsBadge" class="hidden absolute top-0.5 right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border-2 border-white shadow-sm">0</span>
-        </button>
-        <button id="mobile-nav-prescriptions" onclick="switchTab('prescriptions')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
-            <i data-lucide="pill" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5 font-bold">Đơn thuốc</span>
-        </button>
-        <button id="mobile-nav-chartTab" onclick="switchTab('chartTab')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
-            <i data-lucide="line-chart" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5 font-bold">Biểu đồ</span>
-        </button>
-        <button id="mobile-nav-med-search" onclick="switchTab('med-search')" class="flex flex-col items-center py-1.5 px-2.5 rounded-2xl text-slate-400 font-medium transition touch-shrink min-w-[58px]">
-            <i data-lucide="search" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5 font-bold">Tra thuốc</span>
-        </button>
-    </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Trạng thái sức khỏe chung</label>
+                    <select id="logConditionState" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
+                        <option value="improving">Đang đỡ hơn / Giảm sốt</option>
+                        <option value="fever_rising">Sốt lại / Tăng nhiệt độ</option>
+                        <option value="stable">Thân nhiệt ổn định</option>
+                        <option value="fatigued">Rất mệt mỏi</option>
+                    </select>
+                </div>
 
-    <!-- MODAL 0A: QUICK CHILD SWITCHER BOTTOM SHEET (1-Tap Select) -->
-    <div id="quickChildSwitcherModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
-        <div class="bg-white rounded-3xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
-            <div class="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-1"></div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
-                <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
-                    <div class="p-2 bg-teal-50 text-teal-600 rounded-xl">
-                        <i data-lucide="baby" class="w-5 h-5"></i>
-                    </div>
-                    <span>Chọn Bé Đang Xem Sổ Sức Khỏe</span>
-                </h3>
-                <button onclick="closeQuickChildSwitcher()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Ghi chú diễn tiến triệu chứng / Xử trí</label>
+                    <textarea id="logNotes" rows="2" placeholder="Ví dụ: Đã uống 1 gói Paracetamol 150mg lúc 08:00, chườm ấm nách bẹn..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500"></textarea>
+                </div>
 
-            <div id="quickChildCardsContainer" class="space-y-2.5">
-                <!-- Filled dynamically with large cards -->
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                <button onclick="openChildrenManagerModal(); closeQuickChildSwitcher();" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition touch-shrink">
-                    <i data-lucide="user-plus" class="w-4 h-4 text-teal-600"></i>
-                    <span>+ Thêm Bé Mới Hoặc Chỉnh Sửa Hồ Sơ</span>
-                </button>
-            </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeLogModal()" class="px-4 py-2 bg-slate-100 font-bold rounded-xl text-slate-600">Hủy</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 font-bold rounded-xl text-white shadow">Lưu Nhật Ký Đo</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- MODAL 0: MULTI-CHILD PROFILE MANAGER & SWITCHER -->
-    <div id="childrenManagerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
-            <!-- Mobile Bottom Sheet Handle -->
+    <!-- MODAL 3: Add Prescription Item -->
+    <div id="prescriptionModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
+        <div class="bg-white rounded-3xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
-                    <div class="p-2 bg-teal-50 text-teal-600 rounded-xl">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                    <span>Quản Lý Danh Sách Các Bé</span>
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
+                    <i data-lucide="pill" class="w-5 h-5 text-indigo-600"></i>
+                    <span>Thêm Thuốc Vào Đơn</span>
                 </h3>
-                <button onclick="closeChildrenManagerModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                <button onclick="closePrescriptionModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -896,7 +895,7 @@
 
                 <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
                     <button type="button" onclick="closePrescriptionModal()" class="px-4 py-2 bg-slate-100 font-bold rounded-xl text-slate-600">Hủy</button>
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 font-bold rounded-xl text-white shadow">Lưu Đơn Thuốc</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-white shadow">Lưu Đơn Thuốc</button>
                 </div>
             </form>
         </div>
@@ -1038,7 +1037,6 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Hardcoded Firebase Config from user's project: sosuckhoemi-60f6f
         const HARDCODED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyC4btd6ye9q77OT-T1a0G_cyYHc0x0-fv4",
             authDomain: "sosuckhoemi-60f6f.firebaseapp.com",
@@ -1093,7 +1091,6 @@
                     return;
                 }
 
-                // Strict public data path rule
                 cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'app_state', 'mi_health_data');
 
                 onSnapshot(cloudDocRef, (snapshot) => {
@@ -1163,50 +1160,45 @@
 
     <!-- Main Logic Script -->
     <script>
-        // Extended Pediatric Medicine Database (30+ Common Medicines in Vietnam)
         const MEDICINE_DATABASE = [
-            // --- HẠ SỐT & GIẢM ĐAU ---
-            { name: "Hapacol 80mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Paracetamol cho trẻ sơ sinh & nhỏ tuổi (7-10kg)", keywords: ["hapacol", "paracetamol", "sốt", "80mg"] },
-            { name: "Hapacol 150mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Hạ sốt, giảm đau vị cam dễ uống (10-15kg)", keywords: ["hapacol", "paracetamol", "sốt", "150mg"] },
-            { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Hạ sốt, giảm đau trẻ em (16-25kg)", keywords: ["hapacol", "paracetamol", "sốt", "250mg"] },
-            { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1 viên/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Hạ sốt, giảm đau cho thiếu niên & người lớn", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
-            { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được (7-10kg)", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt"] },
-            { name: "Efferalgan 150mg (Đặt/Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Dùng khi trẻ sốt cao (10-15kg)", keywords: ["efferalgan", "sốt", "sủi"] },
-            { name: "Efferalgan 250mg (Đặt/Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, isAntibiotic: false, notes: "Hạ sốt dạng sủi bột pha nước (16-25kg)", keywords: ["efferalgan", "sốt"] },
-            { name: "Doliprane Siro 2.4% (Hạ sốt Pháp)", category: "Hạ sốt", dosageRef: "Theo nấc xi-lanh kg", perKgDoseMg: 15, isAntibiotic: false, notes: "Siro hạ sốt kèm xi-lanh đo đúng số kg của trẻ", keywords: ["doliprane", "siro", "sốt", "pháp"] },
-            { name: "Siro Nurofen 100mg/5ml (Ibuprofen)", category: "Hạ sốt", dosageRef: "10mg/kg mỗi 6-8h", perKgDoseMg: 10, isAntibiotic: false, notes: "Kháng viêm hạ sốt khi Paracetamol không hạ", keywords: ["nurofen", "ibuprofen", "sốt cao", "kháng viêm"] },
-            { name: "Panadol Trẻ Em (Siro dâu)", category: "Hạ sốt", dosageRef: "5-10ml/lần", perKgDoseMg: 12, isAntibiotic: false, notes: "Siro hạ sốt vị dâu thơm ngon dễ uống", keywords: ["panadol", "sốt", "paracetamol"] },
+            { name: "Hapacol 80mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 6, maxKg: 10, isAntibiotic: false, notes: "Paracetamol cho trẻ sơ sinh & nhỏ tuổi (6-10kg)", keywords: ["hapacol", "paracetamol", "sốt", "80mg"] },
+            { name: "Hapacol 150mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 10, maxKg: 16, isAntibiotic: false, notes: "Hạ sốt, giảm đau vị cam dễ uống (10-16kg)", keywords: ["hapacol", "paracetamol", "sốt", "150mg"] },
+            { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 16, maxKg: 25, isAntibiotic: false, notes: "Hạ sốt, giảm đau trẻ em (16-25kg)", keywords: ["hapacol", "paracetamol", "sốt", "250mg"] },
+            { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1 viên/lần", perKgDoseMg: 12.5, minKg: 35, maxKg: 70, isAntibiotic: false, notes: "Hạ sốt, giảm đau cho thiếu niên & người lớn", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
+            { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên đặt/lần", perKgDoseMg: 12.5, minKg: 6, maxKg: 10, isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được (6-10kg)", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt"] },
+            { name: "Efferalgan 150mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 10, maxKg: 16, isAntibiotic: false, notes: "Dùng khi trẻ sốt cao (10-16kg)", keywords: ["efferalgan", "sốt", "sủi"] },
+            { name: "Efferalgan 250mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 16, maxKg: 25, isAntibiotic: false, notes: "Hạ sốt dạng sủi bột pha nước (16-25kg)", keywords: ["efferalgan", "sốt"] },
+            { name: "Efferalgan 300mg (Viên đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên đặt/lần", perKgDoseMg: 12.5, minKg: 20, maxKg: 30, isAntibiotic: false, notes: "Viên đặt đít cho trẻ lớn khi nôn trớ (20-30kg)", keywords: ["efferalgan", "đặt hậu môn", "300mg"] },
+            { name: "Doliprane Siro 2.4% (Pháp)", category: "Hạ sốt", dosageRef: "Theo nấc xi-lanh kg", perKgDoseMg: 15, minKg: 3, maxKg: 26, isAntibiotic: false, notes: "Siro hạ sốt kèm xi-lanh đo đúng số kg của trẻ (3-26kg)", keywords: ["doliprane", "siro", "sốt", "pháp"] },
+            { name: "Siro Paracetamol 120mg/5ml", category: "Hạ sốt", dosageRef: "5.0 - 7.5 ml/lần", perKgDoseMg: 12.5, minKg: 4, maxKg: 20, isAntibiotic: false, notes: "Siro hạ sốt vị ngọt dễ uống cho trẻ nhỏ", keywords: ["siro", "paracetamol", "sốt"] },
+            { name: "Siro Nurofen 100mg/5ml (Ibuprofen)", category: "Hạ sốt", dosageRef: "10mg/kg mỗi 6-8h", perKgDoseMg: 10, minKg: 7, maxKg: 30, isAntibiotic: false, notes: "Kháng viêm hạ sốt khi Paracetamol kém đáp ứng (>3 tháng tuổi)", keywords: ["nurofen", "ibuprofen", "sốt cao", "kháng viêm"] },
+            { name: "Panadol Trẻ Em (Siro dâu)", category: "Hạ sốt", dosageRef: "5-10ml/lần", perKgDoseMg: 12, minKg: 5, maxKg: 20, isAntibiotic: false, notes: "Siro hạ sốt vị dâu thơm ngon dễ uống", keywords: ["panadol", "sốt", "paracetamol"] },
+            { name: "Oresol Hydrite (Gói pha 200ml)", category: "Tiêu hóa", dosageRef: "Uống từng thìa theo nhu cầu", isAntibiotic: false, minKg: 3, maxKg: 60, notes: "Bù nước & điện giải RẤT QUAN TRỌNG khi trẻ sốt cao", keywords: ["oresol", "bù nước", "điện giải"] },
 
-            // --- HO & PHẾ QUẢN ---
-            { name: "Siro Prospan (Nhập Đức)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro ho thảo dược lá thường xuân nổi tiếng của Đức", keywords: ["prospan", "ho", "siro", "thảo dược", "lá thường xuân"] },
-            { name: "Siro Astex (BV Nhi Đồng 1)", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro ho húng chanh, tần dày lá của BV Nhi Đồng 1", keywords: ["astex", "ho", "húng chanh", "nhi đồng"] },
-            { name: "Siro Bisolvon Trẻ Em (Bromhexin)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", isAntibiotic: false, notes: "Siro long đờm, loãng dịch nhầy đường hô hấp", keywords: ["bisolvon", "long đờm", "ho"] },
-            { name: "Siro Halixol (Ambroxol)", category: "Ho - Phế quản", dosageRef: "2.5ml x 2-3 lần/ngày", isAntibiotic: false, notes: "Long đờm hiệu quả cho viêm phế quản", keywords: ["halixol", "ambroxol", "long đờm"] },
-            { name: "Siro Flugermin / Bảo Thanh Trẻ Em", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", isAntibiotic: false, notes: "Giảm ho dịu họng từ mật ong và thảo dược", keywords: ["bảo thanh", "ho", "thảo dược"] },
+            { name: "Siro Prospan (Nhập Đức)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Siro ho thảo dược lá thường xuân nổi tiếng của Đức", keywords: ["prospan", "ho", "siro", "thảo dược", "lá thường xuân"] },
+            { name: "Siro Astex (BV Nhi Đồng 1)", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", minKg: 4, maxKg: 35, isAntibiotic: false, notes: "Siro ho húng chanh, tần dày lá của BV Nhi Đồng 1", keywords: ["astex", "ho", "húng chanh", "nhi đồng"] },
+            { name: "Siro Bisolvon Trẻ Em (Bromhexin)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", minKg: 6, maxKg: 40, isAntibiotic: false, notes: "Siro long đờm, loãng dịch nhầy đường hô hấp", keywords: ["bisolvon", "long đờm", "ho"] },
+            { name: "Siro Halixol (Ambroxol)", category: "Ho - Phế quản", dosageRef: "2.5ml x 2-3 lần/ngày", minKg: 6, maxKg: 40, isAntibiotic: false, notes: "Long đờm hiệu quả cho viêm phế quản", keywords: ["halixol", "ambroxol", "long đờm"] },
+            { name: "Siro Bảo Thanh Trẻ Em", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Giảm ho dịu họng từ mật ong và thảo dược", keywords: ["bảo thanh", "ho", "thảo dược"] },
 
-            // --- KHÁNG SINH NlÊU KHOA ---
-            { name: "Augmentin 250mg/31.25mg", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", isAntibiotic: true, notes: "Amoxicillin + Acid Clavulanic điều trị viêm tai họng", keywords: ["augmentin", "kháng sinh", "250mg"] },
-            { name: "Augmentin 500mg/62.5mg", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh hô hấp liều cao cho trẻ em", keywords: ["augmentin", "kháng sinh", "500mg"] },
-            { name: "Zinnat 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: true, notes: "Cefuroxime axetil điều trị viêm phế quản, tai mũi họng", keywords: ["zinnat", "cefuroxime", "kháng sinh"] },
-            { name: "Zinnat 250mg (Viên/Gói cốm)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh thế hệ 2 đường uống", keywords: ["zinnat", "kháng sinh", "250mg"] },
-            { name: "Ceclor 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 3 lần/ngày", isAntibiotic: true, notes: "Cefaclor vị dâu điều trị viêm phế quản, tai giữa", keywords: ["ceclor", "cefaclor", "kháng sinh"] },
-            { name: "Zithromax 200mg/5ml (Azithromycin)", category: "Kháng sinh", dosageRef: "10mg/kg x 1 lần/ngày (3 ngày)", isAntibiotic: true, notes: "Kháng sinh liều ngắn 3 ngày cho nhiễm khuẩn hô hấp", keywords: ["zithromax", "azithromycin", "kháng sinh"] },
-            { name: "Orelox 40mg/5ml (Cefpodoxime)", category: "Kháng sinh", dosageRef: "5mg/kg x 2 lần/ngày", isAntibiotic: true, notes: "Kháng sinh Cefpodoxime siro điều trị viêm họng tai giữa", keywords: ["orelox", "cefpodoxime", "kháng sinh"] },
+            { name: "Augmentin 250mg/31.25mg", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 8, maxKg: 18, isAntibiotic: true, notes: "Amoxicillin + Acid Clavulanic điều trị viêm tai họng", keywords: ["augmentin", "kháng sinh", "250mg"] },
+            { name: "Augmentin 500mg/62.5mg", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 18, maxKg: 35, isAntibiotic: true, notes: "Kháng sinh hô hấp liều cao cho trẻ em", keywords: ["augmentin", "kháng sinh", "500mg"] },
+            { name: "Zinnat 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefuroxime axetil điều trị viêm phế quản, tai mũi họng", keywords: ["zinnat", "cefuroxime", "kháng sinh"] },
+            { name: "Zinnat 250mg (Viên/Gói cốm)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 16, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh thế hệ 2 đường uống", keywords: ["zinnat", "kháng sinh", "250mg"] },
+            { name: "Ceclor 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 3 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefaclor vị dâu điều trị viêm phế quản, tai giữa", keywords: ["ceclor", "cefaclor", "kháng sinh"] },
+            { name: "Zithromax 200mg/5ml (Azithromycin)", category: "Kháng sinh", dosageRef: "10mg/kg x 1 lần/ngày (3 ngày)", minKg: 8, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh liều ngắn 3 ngày cho nhiễm khuẩn hô hấp", keywords: ["zithromax", "azithromycin", "kháng sinh"] },
+            { name: "Orelox 40mg/5ml (Cefpodoxime)", category: "Kháng sinh", dosageRef: "5mg/kg x 2 lần/ngày", minKg: 6, maxKg: 25, isAntibiotic: true, notes: "Kháng sinh Cefpodoxime siro điều trị viêm họng tai giữa", keywords: ["orelox", "cefpodoxime", "kháng sinh"] },
 
-            // --- TIÊU HÓA & ORESOL ---
-            { name: "Smecta 3g (Diosmectite)", category: "Tiêu hóa", dosageRef: "1 gói x 2-3 lần/ngày", isAntibiotic: false, notes: "Bao niêm mạc ruột khi tiêu chảy, đi ngoài phân sống", keywords: ["smecta", "tiêu chảy", "đi ngoài"] },
-            { name: "Enterogermina (Ống 5ml)", category: "Tiêu hóa", dosageRef: "1-2 ống/ngày", isAntibiotic: false, notes: "Men vi sinh dạng ống bổ sung bào tử Bacillus clausii", keywords: ["enterogermina", "men vi sinh"] },
-            { name: "Bioflora 100mg (Gói bột)", category: "Tiêu hóa", dosageRef: "1-2 gói/ngày", isAntibiotic: false, notes: "Men nấm Saccharomyces boulardii kháng lại kháng sinh", keywords: ["bioflora", "men nấm", "tiêu hóa"] },
-            { name: "Oresol Hydrite (Gói pha 200ml)", category: "Tiêu hóa", dosageRef: "Uống bù nước theo nhu cầu", isAntibiotic: false, notes: "Bù điện giải chống mất nước khi sốt cao hoặc tiêu chảy", keywords: ["oresol", "bù nước", "điện giải"] },
+            { name: "Smecta 3g (Diosmectite)", category: "Tiêu hóa", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Bao niêm mạc ruột khi tiêu chảy, đi ngoài phân sống", keywords: ["smecta", "tiêu chảy", "đi ngoài"] },
+            { name: "Enterogermina (Ống 5ml)", category: "Tiêu hóa", dosageRef: "1-2 ống/ngày", minKg: 3, maxKg: 40, isAntibiotic: false, notes: "Men vi sinh dạng ống bổ sung bào tử Bacillus clausii", keywords: ["enterogermina", "men vi sinh"] },
+            { name: "Bioflora 100mg (Gói bột)", category: "Tiêu hóa", dosageRef: "1-2 gói/ngày", minKg: 4, maxKg: 40, isAntibiotic: false, notes: "Men nấm Saccharomyces boulardii kháng lại kháng sinh", keywords: ["bioflora", "men nấm", "tiêu hóa"] },
 
-            // --- DỊ ỨNG & MŨI HỌNG ---
-            { name: "Siro Aerius 0.5mg/ml (Desloratadine)", category: "Dị ứng", dosageRef: "2.5ml x 1 lần/ngày", isAntibiotic: false, notes: "Kháng Histamin giảm sổ mũi, ngứa dị ứng, nổi mề đày", keywords: ["aerius", "desloratadine", "sổ mũi", "dị ứng"] },
-            { name: "Siro Zyrtec 1mg/ml (Cetirizine)", category: "Dị ứng", dosageRef: "2.5ml - 5ml/ngày", isAntibiotic: false, notes: "Siro chống dị ứng viêm mũi thời tiết", keywords: ["zyrtec", "cetirizine", "dị ứng"] },
-            { name: "Nước muối ưu trương Nebusal 3%", category: "Dị ứng", dosageRef: "Xịt/Nhỏ 2-3 lần/ngày", isAntibiotic: false, notes: "Giảm nghẹt mũi, loãng nhầy mũi họng hiệu quả", keywords: ["nebusal", "xịt mũi", "nghẹt mũi"] },
+            { name: "Siro Aerius 0.5mg/ml (Desloratadine)", category: "Dị ứng", dosageRef: "2.5ml x 1 lần/ngày", minKg: 6, maxKg: 30, isAntibiotic: false, notes: "Kháng Histamin giảm sổ mũi, ngứa dị ứng, nổi mề đày", keywords: ["aerius", "desloratadine", "sổ mũi", "dị ứng"] },
+            { name: "Siro Zyrtec 1mg/ml (Cetirizine)", category: "Dị ứng", dosageRef: "2.5ml - 5ml/ngày", minKg: 8, maxKg: 35, isAntibiotic: false, notes: "Siro chống dị ứng viêm mũi thời tiết", keywords: ["zyrtec", "cetirizine", "dị ứng"] },
+            { name: "Nước muối ưu trương Nebusal 3%", category: "Dị ứng", dosageRef: "Xịt/Nhỏ 2-3 lần/ngày", minKg: 2, maxKg: 60, isAntibiotic: false, notes: "Giảm nghẹt mũi, loãng nhầy mũi họng hiệu quả", keywords: ["nebusal", "xịt mũi", "nghẹt mũi"] },
 
-            // --- TĂNG ĐỀ KHÁNG & VITAMIN ---
-            { name: "Vitamin D3K2 Lineabon (Nho)", category: "Bổ sung", dosageRef: "6 giọt/ngày", isAntibiotic: false, notes: "Hấp thu Canxi phát triển chiều cao cho trẻ", keywords: ["d3k2", "lineabon", "canxi", "vitamin"] },
-            { name: "Siro Imunoglukan P4H", category: "Bổ sung", dosageRef: "1ml / 5kg cân nặng x 1 lần/ngày", isAntibiotic: false, notes: "Tăng cường miễn dịch đường hô hấp cho trẻ hay ốm vặt", keywords: ["imunoglukan", "tăng đề kháng", "miễn dịch"] }
+            { name: "Vitamin D3K2 Lineabon (Nho)", category: "Bổ sung", dosageRef: "6 giọt/ngày", minKg: 3, maxKg: 30, isAntibiotic: false, notes: "Hấp thu Canxi phát triển chiều cao cho trẻ", keywords: ["d3k2", "lineabon", "canxi", "vitamin"] },
+            { name: "Siro Imunoglukan P4H", category: "Bổ sung", dosageRef: "1ml / 5kg cân nặng x 1 lần/ngày", minKg: 5, maxKg: 35, isAntibiotic: false, notes: "Tăng cường miễn dịch đường hô hấp cho trẻ hay ốm vặt", keywords: ["imunoglukan", "tăng đề kháng", "miễn dịch"] }
         ];
 
         let appData = {
@@ -1231,7 +1223,6 @@
         let autoSaveTimer = null;
         let feverChartInstance = null;
 
-        // Audio Alarm Synthesizer Context
         let audioCtx = null;
         let alarmIntervalTimer = null;
         let isAlarmRinging = false;
@@ -1312,7 +1303,6 @@
             }
         }
 
-        // --- Active Child Profile Helper Functions ---
         function getActiveChild() {
             if (!appData.children || appData.children.length === 0) {
                 appData.children = [{ id: "c1", name: "Mi", handbookTitle: "Sổ Tay Sức Khỏe", defaultWeight: 12, dob: "" }];
@@ -1679,7 +1669,6 @@
             const dob = document.getElementById('settingDob').value || "";
 
             if (editId) {
-                // Update existing child
                 const child = appData.children.find(c => c.id === editId);
                 if (child) {
                     child.name = name;
@@ -1689,7 +1678,6 @@
                 }
                 showToast(`Đã cập nhật thông tin của ${name}`);
             } else {
-                // Add new child
                 const newChild = {
                     id: "child-" + Date.now(),
                     name: name,
@@ -1745,11 +1733,9 @@
             const activeChild = getActiveChild();
             const kgInput = parseFloat(document.getElementById('childWeightKg')?.value) || (activeChild.defaultWeight || 12);
             
-            // Calculate mg (10-15mg/kg)
             const minMg = Math.round(kgInput * 10);
             const maxMg = Math.round(kgInput * 15);
             
-            // Convert to ml for Paracetamol syrup 120mg/5ml (24mg/ml)
             const minMlSyrup = (minMg / 24).toFixed(1);
             const maxMlSyrup = (maxMg / 24).toFixed(1);
 
@@ -1772,30 +1758,13 @@
             }
 
             const warningBox = document.getElementById('feverAgeWarningBox');
-            const formSuggestBox = document.getElementById('feverFormSuggest');
-
-            let formText = "";
             let alertMsg = "";
 
             if (ageObj && ageObj.totalMonths < 3) {
                 alertMsg = "⚠️ TRẺ DƯỚI 3 THÁNG TUỔI SỐT CAO: Cần đưa bé tới cơ sở y tế khám ngay. Không tự ý dùng Paracetamol khi chưa có chỉ định trực tiếp từ bác sĩ!";
+            } else if (kgInput < 5) {
+                alertMsg = "⚠️ TRẺ DƯỚI 5 KG: Vui lòng hỏi ý kiến Bác sĩ chuyên khoa Nhi để được kê đơn liều lượng chính xác.";
             }
-
-            if (kgInput < 7) {
-                formText = "Siro Paracetamol 120mg/5ml (uống theo ml chuẩn) hoặc Efferalgan 80mg đặt hậu môn nếu nôn trớ.";
-            } else if (kgInput >= 7 && kgInput < 10) {
-                formText = "Hapacol 80mg / Efferalgan 80mg (1 gói/viên) hoặc Siro Paracetamol 120mg/5ml (~3.5 - 5.0 ml).";
-            } else if (kgInput >= 10 && kgInput < 16) {
-                formText = "Hapacol 150mg / Efferalgan 150mg (1 gói/viên) hoặc Siro Paracetamol 120mg/5ml (~5.0 - 7.5 ml).";
-            } else if (kgInput >= 16 && kgInput < 25) {
-                formText = "Hapacol 250mg / Efferalgan 250mg (1 gói/viên dạng bột sủi/cốm pha nước).";
-            } else if (kgInput >= 25 && kgInput < 40) {
-                formText = "Paracetamol 325mg - 500mg (1 viên/gói).";
-            } else {
-                formText = "Paracetamol 500mg (1-2 viên/lần).";
-            }
-
-            if (formSuggestBox) formSuggestBox.innerText = `• Dạng gợi ý: ${formText}`;
 
             if (warningBox) {
                 if (alertMsg) {
@@ -1805,25 +1774,78 @@
                     warningBox.classList.add('hidden');
                 }
             }
-        }
 
-        function addCalculatedDoseToPrescription() {
-            const activeChild = getActiveChild();
-            const kgInput = parseFloat(document.getElementById('childWeightKg')?.value) || activeChild.defaultWeight || 12;
-            const minMg = Math.round(kgInput * 10);
-            const maxMg = Math.round(kgInput * 15);
-            
-            closeDosageCalcModal();
-            switchTab('prescriptions');
-            openPrescriptionModal();
+            // FILTER MEDICINES STRICTLY SUITABLE FOR THIS KG AND AGE
+            const container = document.getElementById('feverSuggestedMedsContainer');
+            const countBadge = document.getElementById('calcMatchesCountBadge');
+            if (!container) return;
 
-            let recMed = "Hapacol 150mg";
-            if (kgInput < 10) recMed = "Hapacol 80mg";
-            else if (kgInput >= 16) recMed = "Hapacol 250mg";
+            let suitableMeds = MEDICINE_DATABASE.filter(med => {
+                if (med.category === 'Hạ sốt' || med.category === 'Tiêu hóa') {
+                    if (med.minKg && kgInput < med.minKg) return false;
+                    if (med.maxKg && kgInput > med.maxKg) return false;
+                    return true;
+                }
+                return false;
+            });
 
-            document.getElementById('rxName').value = recMed;
-            document.getElementById('rxDosage').value = `1 gói (${minMg}-${maxMg}mg)/lần`;
-            document.getElementById('rxNotes').value = `Uống khi sốt ≥ 38.5°C, các lần cách nhau 4-6 tiếng (tối đa 4 lần/ngày). Cân nặng: ${kgInput}kg.`;
+            if (countBadge) countBadge.innerText = `${suitableMeds.length} thuốc phù hợp`;
+
+            if (suitableMeds.length === 0) {
+                container.innerHTML = `<div class="p-4 bg-slate-50 text-center text-slate-500 rounded-2xl text-xs">Không tìm thấy loại thuốc thông thường phù hợp mức cân nặng này. Vui lòng tham vấn ý kiến Bác sĩ!</div>`;
+                return;
+            }
+
+            container.innerHTML = suitableMeds.map(med => {
+                const allergyMatch = checkMedicationAllergy(med.name);
+                const isAllergic = !!allergyMatch;
+
+                let calculatedItemDosage = med.dosageRef;
+                if (med.name.includes("Siro Paracetamol")) {
+                    calculatedItemDosage = `${minMlSyrup} - ${maxMlSyrup} ml / lần`;
+                } else if (med.name.includes("Doliprane Siro")) {
+                    calculatedItemDosage = `Rút đúng nấc ${kgInput} kg trên xi-lanh đi kèm`;
+                } else if (med.name.includes("Nurofen")) {
+                    const nurofenMl = (kgInput * 0.5).toFixed(1);
+                    calculatedItemDosage = `${nurofenMl} ml / lần (mỗi 6-8h, khi sốt cao)`;
+                } else if (med.name.includes("80mg")) {
+                    calculatedItemDosage = `1 gói/viên (80mg) / lần`;
+                } else if (med.name.includes("150mg")) {
+                    calculatedItemDosage = `1 gói/viên (150mg) / lần`;
+                } else if (med.name.includes("250mg")) {
+                    calculatedItemDosage = `1 gói/viên (250mg) / lần`;
+                } else if (med.name.includes("500mg")) {
+                    calculatedItemDosage = `1 viên/lần`;
+                }
+
+                return `
+                    <div class="p-3 rounded-2xl border ${isAllergic ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200/90'} space-y-1.5 transition">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <h5 class="font-extrabold text-slate-800 text-xs sm:text-sm">${med.name}</h5>
+                                    <span class="bg-teal-100 text-teal-800 text-[9px] font-extrabold px-2 py-0.2 rounded-full">${med.category}</span>
+                                    ${isAllergic ? '<span class="bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase">Dị ứng</span>' : ''}
+                                </div>
+                                <p class="text-[11px] text-slate-600 mt-0.5 font-medium">${med.notes}</p>
+                            </div>
+                            <button onclick="usePresetMedicine('${med.name.replace(/'/g, "\\'")}', '${calculatedItemDosage.replace(/'/g, "\\'")}', ${med.isAntibiotic}, '${med.notes.replace(/'/g, "\\'")}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-2.5 py-1.5 rounded-xl transition shadow-sm shrink-0 flex items-center gap-1 touch-shrink">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>Kê vào đơn</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-white/90 p-2 rounded-xl border border-slate-200/80 flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500 font-semibold">Liều khuyến cáo cho ${activeChild.name} (${kgInput}kg):</span>
+                            <strong class="text-teal-950 font-black">${calculatedItemDosage}</strong>
+                        </div>
+
+                        ${isAllergic ? `<p class="text-[10px] text-rose-700 font-bold">⚠️ ${activeChild.name} có mẫn cảm với ${allergyMatch.name}! Hãy cẩn trọng khi sử dụng.</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
         }
 
         function loadData() {
@@ -1832,7 +1854,6 @@
                 if (stored) {
                     appData = JSON.parse(stored);
                 } else {
-                    // Check backward compatibility from v3
                     const oldV3 = localStorage.getItem('mi_health_tracker_data_v3');
                     if (oldV3) {
                         const parsedOld = JSON.parse(oldV3);
@@ -2011,7 +2032,6 @@
             let latestTempNum = 0;
             let latestTempStr = "--";
 
-            // Filter data for active child only
             const childIllnesses = appData.illnesses.filter(i => (i.childId || "c1") === activeChild.id);
             const childRx = appData.prescriptions.filter(p => (p.childId || "c1") === activeChild.id || childIllnesses.some(i => i.id === p.illnessId));
             const childAllergies = appData.allergies.filter(a => (a.childId || "c1") === activeChild.id);
@@ -2294,9 +2314,9 @@
                                     <h3 class="font-bold text-slate-800 text-base">${rx.name}</h3>
                                     ${antibioticBadge}
                                 </div>
-                                <p class="text-xs text-slate-500 mt-0.5">Đợt bệnh: <strong>${ill ? ill.title : 'Khác'}</strong></p>
+                                <p class="text-xs text-slate-500 mt-0.5">Đợt bệnh: <strong>${ill ? ill.title : 'Đợt chung'}</strong></p>
                             </div>
-                            <button onclick="confirmDeletePrescription('${rx.id}')" title="Xóa đơn thuốc" class="text-slate-400 hover:text-rose-600 p-1">
+                            <button onclick="confirmDeletePrescription('${rx.id}')" title="Xóa đơn thuốc" class="text-slate-400 hover:text-rose-600 p-2 touch-shrink">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -2308,7 +2328,7 @@
                             </div>
                             <div>
                                 <span class="text-slate-400 block">Thời gian uống:</span>
-                                <strong class="text-slate-700">${rx.durationDays} ngày (${rx.startDate})</strong>
+                                <strong class="text-slate-700">${rx.durationDays} ngày (từ ${rx.startDate})</strong>
                             </div>
                             <div class="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between">
                                 <div>
@@ -2375,7 +2395,6 @@
                     ? `<div class="bg-rose-50 text-rose-700 text-[11px] p-2 rounded-lg font-bold border border-rose-200 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i> Cảnh báo dị ứng: ${allergyMatch.name} (${allergyMatch.severity})</div>`
                     : '';
 
-                // Calculate personalized dosage suggestion if applicable
                 let personalizedDosageText = med.dosageRef;
                 if (med.perKgDoseMg) {
                     const calcMg = Math.round(childWeight * med.perKgDoseMg);
@@ -2410,6 +2429,7 @@
         }
 
         function usePresetMedicine(name, dosage, isAntibiotic, notes) {
+            closeDosageCalcModal();
             switchTab('prescriptions');
             openPrescriptionModal();
             document.getElementById('rxName').value = name;
@@ -2689,21 +2709,34 @@
             e.preventDefault();
             playActionClickSound();
             const activeChild = getActiveChild();
+            const illnessId = document.getElementById('rxIllnessId').value;
+            const name = document.getElementById('rxName').value.trim();
+            const dosage = document.getElementById('rxDosage').value.trim();
+            const durationDays = parseInt(document.getElementById('rxDurationDays').value) || 5;
+            const startDate = document.getElementById('rxStartDate').value || getTodayDateString();
+            const isAntibiotic = document.getElementById('rxIsAntibiotic').checked;
+            const notes = document.getElementById('rxNotes').value.trim();
+
             const timeNodes = document.querySelectorAll('input[name="rxTime"]:checked');
             const selectedTimes = Array.from(timeNodes).map(n => n.value);
+
+            if (!name || !dosage) {
+                showToast("Vui lòng nhập tên thuốc và liều dùng!");
+                return;
+            }
 
             const newRx = {
                 id: "rx-" + Date.now(),
                 childId: activeChild.id,
-                illnessId: document.getElementById('rxIllnessId').value,
-                name: document.getElementById('rxName').value,
-                dosage: document.getElementById('rxDosage').value,
-                durationDays: parseInt(document.getElementById('rxDurationDays').value),
-                startDate: document.getElementById('rxStartDate').value || getTodayDateString(),
-                isAntibiotic: document.getElementById('rxIsAntibiotic').checked,
+                illnessId: illnessId,
+                name: name,
+                dosage: dosage,
+                durationDays: durationDays,
+                startDate: startDate,
+                isAntibiotic: isAntibiotic,
                 times: selectedTimes.length > 0 ? selectedTimes : ["08:00"],
                 takenLogs: {},
-                notes: document.getElementById('rxNotes').value
+                notes: notes
             };
 
             appData.prescriptions.unshift(newRx);
@@ -2749,11 +2782,18 @@
 
         function openPrescriptionModal() {
             playActionClickSound();
-            document.getElementById('rxStartDate').value = getTodayDateString();
-            document.getElementById('prescriptionModal').classList.remove('hidden');
+            populateIllnessDropdowns();
+            const rxStartDate = document.getElementById('rxStartDate');
+            if (rxStartDate) rxStartDate.value = getTodayDateString();
+            const modal = document.getElementById('prescriptionModal');
+            if (modal) modal.classList.remove('hidden');
             checkRxInputAllergy();
         }
-        function closePrescriptionModal() { document.getElementById('prescriptionModal').classList.add('hidden'); }
+
+        function closePrescriptionModal() {
+            const modal = document.getElementById('prescriptionModal');
+            if (modal) modal.classList.add('hidden');
+        }
 
         function openAllergyModal() { playActionClickSound(); document.getElementById('allergyModal').classList.remove('hidden'); }
         function closeAllergyModal() { document.getElementById('allergyModal').classList.add('hidden'); }
@@ -2830,10 +2870,15 @@
             const modal = document.getElementById('confirmModal');
             modal.classList.remove('hidden');
 
-            document.getElementById('confirmCancelBtn').onclick = () => { modal.classList.add('hidden'); };
-            document.getElementById('confirmOkBtn').onclick = () => {
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+            const okBtn = document.getElementById('confirmOkBtn');
+
+            cancelBtn.onclick = () => { modal.classList.add('hidden'); };
+            okBtn.onclick = () => {
                 modal.classList.add('hidden');
-                if (confirmCallback) confirmCallback();
+                if (typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
             };
         }
 
