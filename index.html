@@ -105,7 +105,7 @@
                                 <i data-lucide="chevron-down" class="w-3 h-3 text-teal-900 opacity-80"></i>
                             </button>
                         </div>
-                        <span class="text-[8.5px] sm:text-[9.5px] bg-white/20 text-teal-100 font-extrabold px-1.5 py-0.5 rounded-lg border border-white/20 shrink-0">v1.03</span>
+                        <span class="text-[8px] sm:text-[9px] bg-white/20 text-teal-100 font-extrabold px-1.5 py-0.5 rounded-lg border border-white/20 shrink-0">v1.05</span>
                     </div>
 
                     <!-- Real-Time Clock & Firebase Status -->
@@ -114,7 +114,7 @@
                             <i data-lucide="clock" class="w-2.5 h-2.5 text-emerald-300 shrink-0"></i>
                             <span>Đang tải...</span>
                         </p>
-                        <span id="cloudStatusBadge" onclick="openCloudConfigModal()" title="Nhấn xem chi tiết kết nối Cloud" class="bg-emerald-500/20 text-emerald-200 text-[8.5px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 cursor-pointer hover:bg-emerald-500/30 transition shadow-sm shrink-0">
+                        <span id="cloudStatusBadge" onclick="openCloudConfigModal()" title="Nhấn xem chi tiết kết nối Cloud" class="bg-emerald-500/20 text-emerald-200 text-[7.5px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border border-emerald-400/30 flex items-center gap-1 cursor-pointer hover:bg-emerald-500/30 transition shadow-sm shrink-0">
                             <span id="cloudStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                             <span id="cloudStatusText">Cloud: Kết nối...</span>
                         </span>
@@ -998,9 +998,9 @@
             </div>
 
             <div class="text-xs text-slate-600 space-y-2.5">
-                <p>Ứng dụng <strong>Sổ Tay Sức Khỏe (v1.03)</strong> đã được tích hợp sẵn kết nối thời gian thực tới dự án Firebase <strong>sosuckhoemi-60f6f</strong>.</p>
+                <p>Ứng dụng <strong>Sổ Tay Sức Khỏe (v1.05)</strong> đã được tích hợp sẵn kết nối thời gian thực tới dự án Firebase <strong>sosuckhoemi-60f6f</strong>.</p>
                 <div class="bg-teal-50 p-3 rounded-2xl border border-teal-100 text-teal-900 font-mono text-[11px] space-y-1">
-                    <p><b>Phiên bản:</b> v1.03</p>
+                    <p><b>Phiên bản:</b> v1.05</p>
                     <p><b>Project ID:</b> sosuckhoemi-60f6f</p>
                     <p><b>App ID:</b> 1:1054256985305:web:f54f5b6a15ee550566bac8</p>
                     <p><b>Collection:</b> /artifacts/{appId}/public/data/app_state/mi_health_data</p>
@@ -1175,13 +1175,13 @@
 
             textEl.innerText = text;
             if (status === 'saving') {
-                badge.className = "bg-amber-500/20 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400/30 flex items-center gap-1 cursor-pointer";
+                badge.className = "bg-amber-500/20 text-amber-200 text-[7.5px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border border-amber-400/30 flex items-center gap-1 cursor-pointer shrink-0";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping";
             } else if (status === 'synced') {
-                badge.className = "bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1 cursor-pointer";
+                badge.className = "bg-emerald-500/20 text-emerald-200 text-[7.5px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border border-emerald-400/30 flex items-center gap-1 cursor-pointer shrink-0";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
             } else {
-                badge.className = "bg-slate-500/20 text-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-400/30 flex items-center gap-1 cursor-pointer";
+                badge.className = "bg-slate-500/20 text-slate-200 text-[7.5px] sm:text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border border-slate-400/30 flex items-center gap-1 cursor-pointer shrink-0";
                 if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-slate-400";
             }
         };
