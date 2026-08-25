@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sổ Tay Sức Khỏe - Mi</title>
+    <title id="documentPageTitle">Sổ Tay Sức Khỏe - Mi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -61,12 +61,6 @@
         }
         .alarm-pulse { animation: pulse-ring 1.3s infinite ease-in-out; }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
         .glass-header {
             background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #042f2e 100%);
         }
@@ -78,13 +72,16 @@
     <header class="glass-header text-white shadow-lg sticky top-0 z-30">
         <div class="max-w-6xl mx-auto px-3.5 py-2.5 sm:py-3 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-2.5">
-                <div class="bg-white/15 p-2 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner shrink-0 touch-shrink">
-                    <i data-lucide="heart-pulse" class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300 animate-pulse"></i>
-                </div>
+                <button onclick="openProfileModal()" title="Cài đặt tên và hồ sơ sức khỏe" class="bg-white/15 hover:bg-white/25 p-2 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner shrink-0 touch-shrink group transition">
+                    <i data-lucide="heart-pulse" class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300 animate-pulse group-hover:scale-110 transition"></i>
+                </button>
                 <div>
-                    <h1 class="text-sm sm:text-xl font-black tracking-tight flex items-center gap-1.5">
-                        <span>Sổ Tay Sức Khỏe</span>
-                        <span class="bg-gradient-to-r from-emerald-400 to-teal-300 text-teal-950 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">Mi</span>
+                    <h1 class="text-sm sm:text-xl font-black tracking-tight flex items-center gap-1.5 cursor-pointer" onclick="openProfileModal()" title="Bấm để đổi tên sổ">
+                        <span id="headerHandbookTitle">Sổ Tay Sức Khỏe</span>
+                        <span id="headerProfileBadge" class="bg-gradient-to-r from-emerald-400 to-teal-300 text-teal-950 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1 hover:brightness-110">
+                            <span id="headerProfileName">Mi</span>
+                            <i data-lucide="edit-2" class="w-2.5 h-2.5 opacity-70"></i>
+                        </span>
                     </h1>
                     <!-- Real-Time Clock & Firebase Status -->
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
@@ -102,7 +99,11 @@
 
             <!-- Header Action Buttons -->
             <div class="flex items-center gap-1 sm:gap-1.5">
-                <button onclick="openDosageCalcModal()" title="Tính liều thuốc hạ sốt theo cân nặng" class="bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1 border border-emerald-300/30 touch-shrink">
+                <button onclick="openProfileModal()" title="Đổi tên & hồ sơ bé" class="bg-teal-400/20 hover:bg-teal-400/30 text-emerald-100 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1 border border-teal-300/30 touch-shrink">
+                    <i data-lucide="user-cog" class="w-4 h-4 text-emerald-300"></i>
+                    <span class="hidden sm:inline">Cài Đặt Tên</span>
+                </button>
+                <button onclick="openDosageCalcModal()" title="Tính liều thuốc hạ sốt theo cân nặng & độ tuổi" class="bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl transition flex items-center space-x-1 border border-emerald-300/30 touch-shrink">
                     <i data-lucide="calculator" class="w-4 h-4 text-emerald-300"></i>
                     <span class="hidden sm:inline">Tính Liều Hạ Sốt</span>
                 </button>
@@ -154,7 +155,7 @@
     <!-- Main Content Container -->
     <main class="max-w-6xl mx-auto px-3.5 pt-3.5 space-y-3.5 sm:space-y-4 flex-grow w-full">
 
-        <!-- Emergency Fever High Alert Notice (Shows if Latest Temp >= 38.5) -->
+        <!-- Emergency Fever High Alert Notice -->
         <div id="highFeverWarningBanner" class="hidden bg-gradient-to-r from-rose-600 to-rose-700 text-white p-3.5 rounded-2xl shadow-lg border border-rose-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-pulse">
             <div class="flex items-center space-x-3">
                 <div class="bg-white/20 p-2.5 rounded-xl border border-white/30 shrink-0">
@@ -162,10 +163,10 @@
                 </div>
                 <div>
                     <h3 class="font-extrabold text-sm sm:text-base flex items-center gap-1.5">
-                        <span>CẢNH BÁO: MI ĐANG SỐT CAO</span>
+                        <span id="warningBannerTitleText">CẢNH BÁO: MI ĐANG SỐT CAO</span>
                         <span id="highFeverTempTag" class="bg-white text-rose-700 text-xs font-black px-2 py-0.5 rounded-lg">39.0 °C</span>
                     </h3>
-                    <p class="text-xs text-rose-100 mt-0.5">Cho Mi uống thuốc hạ sốt Paracetamol theo liều kg, chườm ấm nách bẹn & cho uống nhiều nước/Oresol!</p>
+                    <p id="warningBannerDescText" class="text-xs text-rose-100 mt-0.5">Cho bé uống thuốc hạ sốt Paracetamol theo liều kg, chườm ấm nách bẹn & cho uống nhiều nước/Oresol!</p>
                 </div>
             </div>
             <button onclick="openDosageCalcModal()" class="w-full sm:w-auto bg-white hover:bg-rose-50 text-rose-800 font-extrabold text-xs px-3.5 py-2 rounded-xl transition shadow flex items-center justify-center gap-1.5 shrink-0 touch-shrink">
@@ -220,7 +221,7 @@
                 <div>
                     <h2 class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
                         <i data-lucide="activity" class="w-5 h-5 text-teal-600"></i>
-                        <span>Danh Sách Đợt Bệnh Của Mi</span>
+                        <span id="tabEpisodesTitleText">Danh Sách Đợt Bệnh Của Mi</span>
                     </h2>
                     <p class="text-xs text-slate-500">Theo dõi nhiệt độ & triệu chứng riêng biệt cho từng đợt ốm</p>
                 </div>
@@ -246,7 +247,7 @@
                         </div>
                         <div>
                             <h3 class="font-black text-base sm:text-lg text-white flex items-center gap-2">
-                                <span>Lịch Uống Thuốc Hôm Nay Cho Mi</span>
+                                <span id="tabTodayMedTitleText">Lịch Uống Thuốc Hôm Nay Cho Mi</span>
                                 <span id="todayProgressBadge" class="text-[10px] bg-emerald-500/30 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30 font-extrabold">0/0 Đã Uống</span>
                             </h3>
                             <p class="text-xs text-indigo-200 mt-0.5">Âm thanh chuông báo sẽ tự động phát đúng khung giờ uống thuốc</p>
@@ -316,7 +317,7 @@
                         <i data-lucide="search" class="w-5 h-5 text-teal-600"></i>
                         <span>Tra Cứu & Gợi Ý Thuốc Phổ Biến</span>
                     </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Tìm nhanh loại thuốc, xem liều tham khảo và bấm để thêm vào Đơn thuốc của Mi</p>
+                    <p id="medSearchDescText" class="text-xs text-slate-500 mt-0.5">Tìm nhanh loại thuốc, xem liều tham khảo và bấm để thêm vào Đơn thuốc</p>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -389,6 +390,97 @@
         </button>
     </div>
 
+    <!-- MODAL 0: SET PROFILE & HEALTH HANDBOOK NAME -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
+                    <div class="p-2 bg-teal-50 text-teal-600 rounded-xl">
+                        <i data-lucide="user-cog" class="w-5 h-5"></i>
+                    </div>
+                    <span>Cài Đặt Tên & Hồ Sơ Sức Khỏe</span>
+                </h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveProfileSettings(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Tên Người Dùng / Bé (*)</label>
+                    <div class="relative">
+                        <input type="text" id="settingProfileName" required placeholder="Ví dụ: Mi, Gia Bảo, Bé Bún..." class="w-full p-2.5 pl-9 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-teal-500">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Tên Sổ Tay</label>
+                    <input type="text" id="settingHandbookTitle" placeholder="Ví dụ: Sổ Tay Sức Khỏe, Sổ Nhật Ký Ốm..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-teal-500">
+                </div>
+
+                <!-- Auto-fill Date of Birth from Age inputs -->
+                <div class="bg-teal-50/80 p-3 rounded-2xl border border-teal-100 space-y-2.5">
+                    <label class="block font-bold text-teal-950 text-xs flex items-center justify-between">
+                        <span>⚡ Điền Số Tuổi / Tháng ➔ Tự Động Tính Ngày Sinh:</span>
+                    </label>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[11px] font-semibold text-slate-600 block mb-0.5">Số tuổi:</span>
+                            <input type="number" id="settingAgeYears" min="0" max="18" placeholder="Ví dụ: 2" oninput="autoFillDobFromAgeInputs()" class="w-full p-2 bg-white border border-teal-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-teal-500 text-xs">
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-semibold text-slate-600 block mb-0.5">Số tháng lẻ:</span>
+                            <input type="number" id="settingAgeMonths" min="0" max="11" placeholder="Ví dụ: 4" oninput="autoFillDobFromAgeInputs()" class="w-full p-2 bg-white border border-teal-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-teal-500 text-xs">
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-600 block mb-1">Hoặc bấm chọn nhanh mốc tuổi chuẩn:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" onclick="setQuickAge(3, 6)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">3 tháng</button>
+                            <button type="button" onclick="setQuickAge(6, 8)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">6 tháng</button>
+                            <button type="button" onclick="setQuickAge(12, 10)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">1 tuổi</button>
+                            <button type="button" onclick="setQuickAge(24, 12)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">2 tuổi</button>
+                            <button type="button" onclick="setQuickAge(36, 14)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">3 tuổi</button>
+                            <button type="button" onclick="setQuickAge(60, 18)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">5 tuổi</button>
+                            <button type="button" onclick="setQuickAge(84, 22)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">7 tuổi</button>
+                            <button type="button" onclick="setQuickAge(120, 30)" class="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-bold transition text-[11px]">10 tuổi</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Ngày sinh (Tự động điền)</label>
+                        <input type="date" id="settingDob" onchange="onDobPickerChange()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Cân nặng mặc định (kg)</label>
+                        <input type="number" step="0.5" id="settingDefaultWeight" placeholder="12" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none focus:border-teal-500">
+                    </div>
+                </div>
+
+                <div id="profileAgeDisplay" class="bg-indigo-50 text-indigo-900 p-2.5 rounded-xl border border-indigo-200 font-black text-xs flex items-center gap-1">
+                    🎂 Độ tuổi tính toán: --
+                </div>
+
+                <div class="bg-teal-50 p-3 rounded-2xl border border-teal-100 text-[11px] text-teal-900 space-y-1">
+                    <span class="font-bold block flex items-center gap-1">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-teal-600"></i> Tự động tính toán liều hạ sốt:
+                    </span>
+                    <p>Hệ thống sẽ kết hợp <b>Cân nặng</b> & <b>Độ tuổi</b> để đưa ra khuyến cáo liều Paracetamol (mg/ml) và dạng thuốc phù hợp nhất cho bé!</p>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeProfileModal()" class="px-4 py-2 bg-slate-100 font-bold rounded-xl text-slate-600">Hủy</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 font-bold rounded-xl text-white shadow">Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ALARM MODAL: Fullscreen Active Sound Alert Popup -->
     <div id="medicationAlarmModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-3">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-center alarm-pulse border-2 border-rose-500">
@@ -397,20 +489,20 @@
             </div>
 
             <div>
-                <span class="bg-rose-100 text-rose-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">🔔 ĐẾN GIỜ UỐNG THUỐC CHO MI</span>
+                <span id="alarmModalTopTag" class="bg-rose-100 text-rose-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">🔔 ĐẾN GIỜ UỐNG THUỐC CHO MI</span>
                 <h3 id="alarmMedTitle" class="text-xl sm:text-2xl font-black text-slate-800 mt-2">Hapacol 150mg</h3>
                 <p id="alarmMedDosage" class="text-sm font-extrabold text-indigo-700 mt-0.5">Liều dùng: 1 gói • Lúc 08:00</p>
                 <p id="alarmIllnessTitle" class="text-xs text-slate-500 mt-1">Đợt bệnh: Viêm họng sốt cao</p>
             </div>
 
-            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-xs text-amber-900 font-medium">
-                ⚠️ Chuông đang phát báo thức. Vui lòng kiểm tra và cho Mi uống thuốc đúng liều lượng!
+            <div id="alarmWarningNoticeText" class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-xs text-amber-900 font-medium">
+                ⚠️ Chuông đang phát báo thức. Vui lòng kiểm tra và cho bé uống thuốc đúng liều lượng!
             </div>
 
             <div class="space-y-2">
                 <button id="alarmMarkTakenBtn" onclick="dismissAndTakeAlarmDose()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm py-3.5 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 touch-shrink">
                     <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                    <span>ĐÃ CHO MI UỐNG THUỐC</span>
+                    <span id="alarmTakenBtnText">ĐÃ CHO UỐNG THUỐC</span>
                 </button>
                 <button onclick="stopMedicationAlarmSound()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 rounded-xl transition touch-shrink">
                     Tắt Chuông Báo
@@ -419,13 +511,13 @@
         </div>
     </div>
 
-    <!-- MODAL: Fever Dosage Calculator -->
+    <!-- MODAL: Fever Dosage Calculator (Enhanced with Age & Weight) -->
     <div id="dosageCalcModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 mobile-bottom-sheet">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
                     <i data-lucide="calculator" class="w-5 h-5 text-emerald-600"></i>
-                    <span>Tính Liều Thuốc Hạ Sốt Paracetamol</span>
+                    <span>Tính Liều Paracetamol Theo Cân Nặng & Tuổi</span>
                 </h3>
                 <button onclick="closeDosageCalcModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -433,29 +525,58 @@
             </div>
 
             <div class="space-y-3 text-xs">
+                <!-- Age Tag & Quick Select inside calculator -->
+                <div class="bg-teal-50/80 p-3 rounded-2xl border border-teal-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span id="dosageCalcWeightLabel" class="font-bold text-teal-950">Độ tuổi & Cân nặng:</span>
+                        <span id="calcAgeBadge" class="bg-teal-600 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">Bé: --</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1">
+                        <button type="button" onclick="setQuickAgeInCalc(3, 6)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">3T (6kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(6, 8)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">6T (8kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(12, 10)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">1t (10kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(24, 12)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">2t (12kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(36, 14)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">3t (14kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(60, 18)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">5t (18kg)</button>
+                        <button type="button" onclick="setQuickAgeInCalc(120, 30)" class="px-2 py-0.5 bg-white text-teal-800 rounded border border-teal-200 text-[10px] font-bold">10t (30kg)</button>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Nhập cân nặng của Mi (kg):</label>
+                    <label class="block font-bold text-slate-700 mb-1">Cân nặng chính xác của bé (kg):</label>
                     <input type="number" step="0.5" id="childWeightKg" oninput="calculateFeverDose()" placeholder="Ví dụ: 12" value="12" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-black text-slate-800 text-lg focus:outline-none focus:border-emerald-500">
                 </div>
 
-                <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200/80 space-y-1.5">
+                <div id="feverAgeWarningBox" class="hidden p-3 bg-rose-50 text-rose-800 rounded-2xl border border-rose-200 font-extrabold text-[11px] space-y-1">
+                    <!-- Under 3 months warning if triggered -->
+                </div>
+
+                <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200/80 space-y-2">
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-900 font-bold">Liều Paracetamol khuyến cáo:</span>
-                        <span id="calcDoseMg" class="text-emerald-800 font-black text-sm">120 - 180 mg / lần</span>
+                        <span class="text-emerald-950 font-bold">Liều Paracetamol khuyến cáo:</span>
+                        <strong id="calcDoseMg" class="text-emerald-800 font-black text-sm sm:text-base">120 - 180 mg / lần</strong>
                     </div>
-                    <p class="text-[11px] text-emerald-800 italic">Chuẩn y tế: 10 - 15 mg / kg cân nặng mỗi lần. Mỗi lần uống cách nhau tối thiểu 4 - 6 tiếng (tối đa 4 lần/ngày).</p>
+
+                    <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-bold text-xs">
+                        <span id="calcDoseMlSyrup">Hoặc: 5.0 - 7.5 ml (Siro 120mg/5ml)</span>
+                    </div>
+
+                    <p class="text-[11px] text-emerald-800 italic">Chuẩn y tế: 10 - 15 mg / kg cân nặng mỗi lần. Mỗi lần uống cách nhau 4 - 6 tiếng (tối đa 4 lần/ngày).</p>
                 </div>
 
                 <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-[11px] space-y-1">
-                    <span class="font-bold text-slate-800 block">💡 Chọn dạng Paracetamol phù hợp cho bé:</span>
-                    <p>• <b>7 - 10 kg:</b> Hapacol / Efferalgan 80mg (1 gói/viên)</p>
-                    <p>• <b>10 - 15 kg:</b> Hapacol / Efferalgan 150mg (1 gói/viên)</p>
-                    <p>• <b>16 - 25 kg:</b> Hapacol / Efferalgan 250mg (1 gói/viên)</p>
+                    <span class="font-bold text-slate-800 block">💡 Gợi ý dạng thuốc phù hợp:</span>
+                    <p id="feverFormSuggest" class="text-slate-700 font-semibold">• Đang tính toán...</p>
                 </div>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-100">
-                <button onclick="closeDosageCalcModal()" class="px-5 py-2 bg-emerald-600 font-bold text-white rounded-xl shadow">Đóng</button>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                <button onclick="addCalculatedDoseToPrescription()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 font-extrabold text-white text-xs rounded-xl shadow flex items-center gap-1 touch-shrink">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>+ Thêm Vào Đơn Thuốc</span>
+                </button>
+                <button onclick="closeDosageCalcModal()" class="px-4 py-2 bg-slate-200 font-bold text-slate-700 text-xs rounded-xl">Đóng</button>
             </div>
         </div>
     </div>
@@ -972,7 +1093,7 @@
             { name: "Hapacol 80mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 7-10kg)", isAntibiotic: false, notes: "Paracetamol cho trẻ sơ sinh & nhỏ tuổi", keywords: ["hapacol", "paracetamol", "sốt", "80mg"] },
             { name: "Hapacol 150mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 10-15kg)", isAntibiotic: false, notes: "Hạ sốt, giảm đau vị cam dễ uống", keywords: ["hapacol", "paracetamol", "sốt", "150mg"] },
             { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 16-25kg)", isAntibiotic: false, notes: "Hạ sốt, giảm đau trẻ em (cách 4-6 tiếng)", keywords: ["hapacol", "paracetamol", "sốt", "250mg"] },
-            { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1-2 viên/lần", isAntibiotic: false, notes: "Hạ sốt, giảm đau cho người lớn & thiếu niên", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
+            { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1 viên/lần", isAntibiotic: false, notes: "Hạ sốt, giảm đau cho người lớn & thiếu niên", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
             { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên/lần", isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt"] },
             { name: "Efferalgan 150mg (Gói/Sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 10-15kg)", isAntibiotic: false, notes: "Hạ sốt nhanh hòa tan trong nước", keywords: ["efferalgan", "sốt", "sủi"] },
             { name: "Efferalgan 250mg (Gói/Sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần (trẻ 16-25kg)", isAntibiotic: false, notes: "Hạ sốt giảm đau dạng sủi/bột", keywords: ["efferalgan", "sốt"] },
@@ -992,6 +1113,12 @@
         ];
 
         let appData = {
+            profile: {
+                name: "Mi",
+                handbookTitle: "Sổ Tay Sức Khỏe",
+                defaultWeight: 12,
+                dob: ""
+            },
             illnesses: [],
             prescriptions: [],
             allergies: []
@@ -1020,7 +1147,6 @@
             return audioCtx;
         }
 
-        // Action Tap Sound Feedback (Vibe Touch Sound)
         function playActionClickSound() {
             try {
                 const ctx = getAudioContext();
@@ -1039,51 +1165,129 @@
             } catch(e) {}
         }
 
-        // Extended Musical Alarm Chime (~3.5 sec)
-        function playSynthesizerChime() {
-            try {
-                const ctx = getAudioContext();
-                if (!ctx) return;
+        function calculateAgeFromDob(dobStr) {
+            if (!dobStr) return null;
+            const dob = new Date(dobStr);
+            const now = new Date();
+            if (isNaN(dob.getTime())) return null;
 
-                const now = ctx.currentTime;
-                const sequence = [
-                    { freq: 523.25, time: 0.00, duration: 0.25 },
-                    { freq: 659.25, time: 0.20, duration: 0.25 },
-                    { freq: 783.99, time: 0.40, duration: 0.25 },
-                    { freq: 1046.50, time: 0.60, duration: 0.40 },
-                    { freq: 783.99, time: 0.90, duration: 0.25 },
-                    { freq: 1046.50, time: 1.10, duration: 0.50 },
-                    { freq: 587.33, time: 1.60, duration: 0.25 },
-                    { freq: 659.25, time: 1.80, duration: 0.25 },
-                    { freq: 880.00, time: 2.00, duration: 0.30 },
-                    { freq: 1046.50, time: 2.25, duration: 0.50 },
-                    { freq: 1318.51, time: 2.60, duration: 0.80 }
-                ];
+            let years = now.getFullYear() - dob.getFullYear();
+            let months = now.getMonth() - dob.getMonth();
+            let days = now.getDate() - dob.getDate();
 
-                sequence.forEach(note => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(note.freq, now + note.time);
-
-                    gain.gain.setValueAtTime(0, now + note.time);
-                    gain.gain.linearRampToValueAtTime(0.35, now + note.time + 0.03);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.duration);
-
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-
-                    osc.start(now + note.time);
-                    osc.stop(now + note.time + note.duration + 0.05);
-                });
-
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([400, 150, 400, 150, 600, 200, 600]);
-                }
-            } catch (e) {
-                console.warn("Audio error:", e);
+            if (days < 0) {
+                months--;
             }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            const totalMonths = years * 12 + months;
+            
+            let ageText = "";
+            if (totalMonths < 1) {
+                const diffDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+                ageText = `${Math.max(0, diffDays)} ngày tuổi`;
+            } else if (years < 1) {
+                ageText = `${totalMonths} tháng tuổi`;
+            } else if (months === 0) {
+                ageText = `${years} tuổi`;
+            } else {
+                ageText = `${years} tuổi ${months} tháng`;
+            }
+
+            return { years, months, totalMonths, ageText };
+        }
+
+        // Quick Age Preset Helper (Auto Fills Birthday)
+        function autoFillDobFromAgeInputs() {
+            const years = parseInt(document.getElementById('settingAgeYears')?.value) || 0;
+            const months = parseInt(document.getElementById('settingAgeMonths')?.value) || 0;
+            const totalMonths = years * 12 + months;
+
+            if (totalMonths >= 0) {
+                const d = new Date();
+                d.setMonth(d.getMonth() - totalMonths);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const dobStr = `${y}-${m}-${day}`;
+
+                const dobInput = document.getElementById('settingDob');
+                if (dobInput) dobInput.value = dobStr;
+
+                // Auto suggest WHO weight if empty or default
+                const weightInput = document.getElementById('settingDefaultWeight');
+                if (weightInput && (!weightInput.value || weightInput.value == '12')) {
+                    let suggestedKg = 12;
+                    if (totalMonths <= 3) suggestedKg = 6;
+                    else if (totalMonths <= 6) suggestedKg = 8;
+                    else if (totalMonths <= 12) suggestedKg = 10;
+                    else if (totalMonths <= 24) suggestedKg = 12;
+                    else if (totalMonths <= 36) suggestedKg = 14;
+                    else if (totalMonths <= 60) suggestedKg = 18;
+                    else if (totalMonths <= 84) suggestedKg = 22;
+                    else if (totalMonths <= 120) suggestedKg = 30;
+                    weightInput.value = suggestedKg;
+                }
+
+                updateProfileAgePreview();
+            }
+        }
+
+        function onDobPickerChange() {
+            const dobVal = document.getElementById('settingDob')?.value;
+            const ageObj = calculateAgeFromDob(dobVal);
+            if (ageObj) {
+                const yInput = document.getElementById('settingAgeYears');
+                const mInput = document.getElementById('settingAgeMonths');
+                if (yInput) yInput.value = ageObj.years;
+                if (mInput) mInput.value = ageObj.months;
+            }
+            updateProfileAgePreview();
+        }
+
+        function setQuickAge(monthsCount, suggestedKg) {
+            playActionClickSound();
+            const yInput = document.getElementById('settingAgeYears');
+            const mInput = document.getElementById('settingAgeMonths');
+            if (yInput) yInput.value = Math.floor(monthsCount / 12);
+            if (mInput) mInput.value = monthsCount % 12;
+
+            const weightInput = document.getElementById('settingDefaultWeight');
+            if (weightInput && suggestedKg) weightInput.value = suggestedKg;
+
+            autoFillDobFromAgeInputs();
+        }
+
+        function setQuickAgeInCalc(monthsCount, suggestedKg) {
+            setQuickAge(monthsCount, suggestedKg);
+            const weightInput = document.getElementById('childWeightKg');
+            if (weightInput && suggestedKg) weightInput.value = suggestedKg;
+            calculateFeverDose();
+        }
+
+        function updateProfileAgePreview() {
+            const dobVal = document.getElementById('settingDob')?.value;
+            const ageObj = calculateAgeFromDob(dobVal);
+            const previewEl = document.getElementById('profileAgeDisplay');
+            if (previewEl) {
+                if (ageObj) {
+                    previewEl.innerText = `🎂 Độ tuổi tính toán: ${ageObj.ageText}`;
+                    previewEl.classList.remove('hidden');
+                } else {
+                    previewEl.classList.add('hidden');
+                }
+            }
+        }
+
+        function getProfileName() {
+            return (appData.profile && appData.profile.name) ? appData.profile.name : "Mi";
+        }
+
+        function getHandbookTitle() {
+            return (appData.profile && appData.profile.handbookTitle) ? appData.profile.handbookTitle : "Sổ Tay Sức Khỏe";
         }
 
         function testMedicationAlarmSound() {
@@ -1101,6 +1305,9 @@
             activeAlarmItem = item;
             isAlarmRinging = true;
 
+            const nameUpper = getProfileName().toUpperCase();
+            document.getElementById('alarmModalTopTag').innerText = `🔔 ĐẾN GIỜ UỐNG THUỐC CHO ${nameUpper}`;
+            document.getElementById('alarmTakenBtnText').innerText = `ĐÃ CHO ${nameUpper} UỐNG THUỐC`;
             document.getElementById('alarmMedTitle').innerText = item.medName;
             document.getElementById('alarmMedDosage').innerText = `Liều dùng: ${item.dosage} • Khung giờ: ${item.timeStr}`;
             document.getElementById('alarmIllnessTitle').innerText = `Đợt bệnh: ${item.illTitle}`;
@@ -1116,7 +1323,7 @@
 
             if ('Notification' in window && Notification.permission === 'granted') {
                 try {
-                    new Notification(`🔔 ĐẾN GIỜ UỐNG THUỐC CHO MI!`, {
+                    new Notification(`🔔 ĐẾN GIỜ UỐNG THUỐC CHO ${nameUpper}!`, {
                         body: `${item.medName} (${item.dosage}) - ${item.illTitle}`,
                         icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png'
                     });
@@ -1135,7 +1342,7 @@
                 toggleDoseTaken(activeAlarmItem.rxId, activeAlarmItem.todayStr, activeAlarmItem.timeStr);
             }
             stopMedicationAlarmSound();
-            showToast("✅ Đã đánh dấu Mi đã uống thuốc!");
+            showToast(`✅ Đã đánh dấu ${getProfileName()} đã uống thuốc!`);
         }
 
         function checkMedicationAlarmsLoop() {
@@ -1200,8 +1407,61 @@
             return `${hours}:${mins}`;
         }
 
+        function openProfileModal() {
+            playActionClickSound();
+            document.getElementById('settingProfileName').value = getProfileName();
+            document.getElementById('settingHandbookTitle').value = getHandbookTitle();
+            document.getElementById('settingDefaultWeight').value = appData.profile?.defaultWeight || 12;
+
+            const dobVal = appData.profile?.dob || '';
+            document.getElementById('settingDob').value = dobVal;
+
+            if (dobVal) {
+                const ageObj = calculateAgeFromDob(dobVal);
+                if (ageObj) {
+                    document.getElementById('settingAgeYears').value = ageObj.years;
+                    document.getElementById('settingAgeMonths').value = ageObj.months;
+                }
+            } else {
+                document.getElementById('settingAgeYears').value = '';
+                document.getElementById('settingAgeMonths').value = '';
+            }
+
+            updateProfileAgePreview();
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveProfileSettings(e) {
+            e.preventDefault();
+            playActionClickSound();
+
+            const newName = document.getElementById('settingProfileName').value.trim() || "Mi";
+            const newTitle = document.getElementById('settingHandbookTitle').value.trim() || "Sổ Tay Sức Khỏe";
+            const newWeight = parseFloat(document.getElementById('settingDefaultWeight').value) || 12;
+            const newDob = document.getElementById('settingDob').value || '';
+
+            appData.profile = {
+                name: newName,
+                handbookTitle: newTitle,
+                defaultWeight: newWeight,
+                dob: newDob
+            };
+
+            saveData();
+            closeProfileModal();
+            showToast(`Đã cập nhật hồ sơ: ${newName}`);
+        }
+
         function openDosageCalcModal() {
             document.getElementById('dosageCalcModal').classList.remove('hidden');
+            const weightInput = document.getElementById('childWeightKg');
+            if (weightInput && appData.profile?.defaultWeight) {
+                weightInput.value = appData.profile.defaultWeight;
+            }
             calculateFeverDose();
         }
 
@@ -1210,11 +1470,87 @@
         }
 
         function calculateFeverDose() {
-            const kgInput = parseFloat(document.getElementById('childWeightKg').value) || 12;
+            const kgInput = parseFloat(document.getElementById('childWeightKg')?.value) || (appData.profile?.defaultWeight || 12);
+            
+            // Calculate mg (10-15mg/kg)
             const minMg = Math.round(kgInput * 10);
             const maxMg = Math.round(kgInput * 15);
+            
+            // Convert to ml for Paracetamol syrup 120mg/5ml (24mg/ml)
+            const minMlSyrup = (minMg / 24).toFixed(1);
+            const maxMlSyrup = (maxMg / 24).toFixed(1);
+
             const doseEl = document.getElementById('calcDoseMg');
             if (doseEl) doseEl.innerText = `${minMg} - ${maxMg} mg / lần`;
+
+            const syrupEl = document.getElementById('calcDoseMlSyrup');
+            if (syrupEl) syrupEl.innerText = `Siro Paracetamol (120mg/5ml): ${minMlSyrup} - ${maxMlSyrup} ml / lần`;
+
+            // Calculate age from profile DOB or settingDob input
+            const dobStr = appData.profile?.dob || document.getElementById('settingDob')?.value;
+            const ageObj = calculateAgeFromDob(dobStr);
+
+            const ageTag = document.getElementById('calcAgeBadge');
+            if (ageTag) {
+                if (ageObj) {
+                    ageTag.innerText = `Bé: ${ageObj.ageText} (${kgInput} kg)`;
+                } else {
+                    ageTag.innerText = `Bé: ${kgInput} kg`;
+                }
+            }
+
+            const warningBox = document.getElementById('feverAgeWarningBox');
+            const formSuggestBox = document.getElementById('feverFormSuggest');
+
+            let formText = "";
+            let alertMsg = "";
+
+            if (ageObj && ageObj.totalMonths < 3) {
+                alertMsg = "⚠️ TRẺ DƯỚI 3 THÁNG TUỔI SỐT CAO: Cần đưa bé tới cơ sở y tế khám ngay. Không tự ý dùng Paracetamol khi chưa có chỉ định trực tiếp từ bác sĩ!";
+            }
+
+            if (kgInput < 7) {
+                formText = "Siro Paracetamol 120mg/5ml (uống theo ml chuẩn) hoặc Efferalgan 80mg đặt hậu môn nếu nôn trớ.";
+            } else if (kgInput >= 7 && kgInput < 10) {
+                formText = "Hapacol 80mg / Efferalgan 80mg (1 gói/viên) hoặc Siro Paracetamol 120mg/5ml (~3.5 - 5.0 ml).";
+            } else if (kgInput >= 10 && kgInput < 16) {
+                formText = "Hapacol 150mg / Efferalgan 150mg (1 gói/viên) hoặc Siro Paracetamol 120mg/5ml (~5.0 - 7.5 ml).";
+            } else if (kgInput >= 16 && kgInput < 25) {
+                formText = "Hapacol 250mg / Efferalgan 250mg (1 gói/viên dạng bột sủi/cốm pha nước).";
+            } else if (kgInput >= 25 && kgInput < 40) {
+                formText = "Paracetamol 325mg - 500mg (1 viên/gói).";
+            } else {
+                formText = "Paracetamol 500mg (1-2 viên/lần).";
+            }
+
+            if (formSuggestBox) formSuggestBox.innerText = `• Dạng gợi ý: ${formText}`;
+
+            if (warningBox) {
+                if (alertMsg) {
+                    warningBox.innerText = alertMsg;
+                    warningBox.classList.remove('hidden');
+                } else {
+                    warningBox.classList.add('hidden');
+                }
+            }
+        }
+
+        function addCalculatedDoseToPrescription() {
+            const kgInput = parseFloat(document.getElementById('childWeightKg')?.value) || 12;
+            const minMg = Math.round(kgInput * 10);
+            const maxMg = Math.round(kgInput * 15);
+            
+            closeDosageCalcModal();
+            switchTab('prescriptions');
+            openPrescriptionModal();
+
+            let recMed = "Hapacol 150mg";
+            if (kgInput < 10) recMed = "Hapacol 80mg";
+            else if (kgInput >= 16) recMed = "Hapacol 250mg";
+
+            document.getElementById('rxName').value = recMed;
+            document.getElementById('rxDosage').value = `1 gói (${minMg}-${maxMg}mg)/lần`;
+            document.getElementById('rxNotes').value = `Uống khi sốt ≥ 38.5°C, các lần cách nhau 4-6 tiếng (tối đa 4 lần/ngày). Cân nặng: ${kgInput}kg.`;
         }
 
         function loadData() {
@@ -1225,6 +1561,15 @@
                 }
             } catch (e) {
                 console.error("Lỗi đọc dữ liệu:", e);
+            }
+
+            if (!appData.profile) {
+                appData.profile = {
+                    name: "Mi",
+                    handbookTitle: "Sổ Tay Sức Khỏe",
+                    defaultWeight: 12,
+                    dob: ""
+                };
             }
         }
 
@@ -1252,6 +1597,7 @@
 
         function applyCloudDataToApp(cloudData) {
             if (cloudData) {
+                if (cloudData.profile) appData.profile = cloudData.profile;
                 if (cloudData.illnesses) appData.illnesses = cloudData.illnesses;
                 if (cloudData.prescriptions) appData.prescriptions = cloudData.prescriptions;
                 if (cloudData.allergies) appData.allergies = cloudData.allergies;
@@ -1265,6 +1611,7 @@
         }
 
         function renderAll() {
+            updateDynamicProfileText();
             renderDashboardStats();
             renderIllnessList();
             renderTodayMedReminders();
@@ -1274,6 +1621,23 @@
             populateIllnessDropdowns();
             populateMedSuggestionsList();
             renderFeverChart();
+        }
+
+        function updateDynamicProfileText() {
+            const profileName = getProfileName();
+            const handbookTitle = getHandbookTitle();
+
+            document.getElementById('documentPageTitle').innerText = `${handbookTitle} - ${profileName}`;
+            document.getElementById('headerHandbookTitle').innerText = handbookTitle;
+            document.getElementById('headerProfileName').innerText = profileName;
+
+            document.getElementById('warningBannerTitleText').innerText = `CẢNH BÁO: ${profileName.toUpperCase()} ĐANG SỐT CAO`;
+            document.getElementById('warningBannerDescText').innerText = `Cho ${profileName} uống thuốc hạ sốt Paracetamol theo liều kg, chườm ấm nách bẹn & cho uống nhiều nước/Oresol!`;
+
+            document.getElementById('tabEpisodesTitleText').innerText = `Danh Sách Đợt Bệnh Của ${profileName}`;
+            document.getElementById('tabTodayMedTitleText').innerText = `Lịch Uống Thuốc Hôm Nay Cho ${profileName}`;
+            document.getElementById('medSearchDescText').innerText = `Tìm nhanh loại thuốc, xem liều tham khảo và bấm để thêm vào Đơn thuốc của ${profileName}`;
+            document.getElementById('dosageCalcWeightLabel').innerText = `Nhập cân nặng của ${profileName} (kg):`;
         }
 
         function renderDashboardStats() {
@@ -1358,11 +1722,13 @@
             const container = document.getElementById('illnessList');
             if (!container) return;
 
+            const name = getProfileName();
+
             if (appData.illnesses.length === 0) {
                 container.innerHTML = `
                     <div class="bg-white p-6 sm:p-8 text-center rounded-3xl border border-slate-200 shadow-sm">
                         <i data-lucide="folder-plus" class="w-10 h-10 sm:w-12 sm:h-12 text-teal-400 mx-auto mb-2.5"></i>
-                        <h3 class="font-bold text-slate-700 text-sm sm:text-base">Chưa có đợt bệnh nào của Mi</h3>
+                        <h3 class="font-bold text-slate-700 text-sm sm:text-base">Chưa có đợt bệnh nào của ${name}</h3>
                         <p class="text-xs text-slate-500 mt-1">Nhấn nút "+ Tạo Đợt Bệnh Mới" để bắt đầu theo dõi sức khỏe.</p>
                     </div>`;
                 lucide.createIcons();
@@ -1460,6 +1826,7 @@
             const container = document.getElementById('todayMedRemindersContainer');
             if (!container) return;
 
+            const name = getProfileName();
             const todayStr = getTodayDateString();
             let todayItems = [];
 
@@ -1488,7 +1855,7 @@
             });
 
             if (todayItems.length === 0) {
-                container.innerHTML = `<p class="text-xs text-indigo-200 italic p-2">Hôm nay Mi không có lịch uống thuốc nào. Chúc Mi luôn khỏe mạnh!</p>`;
+                container.innerHTML = `<p class="text-xs text-indigo-200 italic p-2">Hôm nay ${name} không có lịch uống thuốc nào. Chúc ${name} luôn khỏe mạnh!</p>`;
                 return;
             }
 
@@ -1519,11 +1886,13 @@
             const container = document.getElementById('prescriptionList');
             if (!container) return;
 
+            const name = getProfileName();
+
             if (appData.prescriptions.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-full bg-white p-8 text-center rounded-3xl border border-slate-200 shadow-sm">
                         <i data-lucide="pill" class="w-12 h-12 text-indigo-400 mx-auto mb-3"></i>
-                        <h3 class="font-bold text-slate-700">Chưa có đơn thuốc nào của Mi</h3>
+                        <h3 class="font-bold text-slate-700">Chưa có đơn thuốc nào của ${name}</h3>
                         <p class="text-xs text-slate-500 mt-1">Bấm nút "+ Thêm Đơn Thuốc" hoặc chọn trong "Tra Cứu Thuốc" để tạo đơn.</p>
                     </div>`;
                 lucide.createIcons();
@@ -1663,7 +2032,7 @@
             const msgEl = document.getElementById('rxAllergyMsg');
 
             if (allergyMatch && warningBox && msgEl) {
-                msgEl.innerText = `CẢNH BÁO DỊ ỨNG: Mi có tiền sử dị ứng với ${allergyMatch.name} (${allergyMatch.severity})!`;
+                msgEl.innerText = `CẢNH BÁO DỊ ỨNG: ${getProfileName()} có tiền sử dị ứng với ${allergyMatch.name} (${allergyMatch.severity})!`;
                 warningBox.classList.remove('hidden');
             } else if (warningBox) {
                 warningBox.classList.add('hidden');
@@ -1728,12 +2097,14 @@
             const container = document.getElementById('allergyList');
             if (!container) return;
 
+            const name = getProfileName();
+
             if (appData.allergies.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-full bg-white p-8 text-center rounded-3xl border border-slate-200 shadow-sm">
                         <i data-lucide="shield-check" class="w-12 h-12 text-emerald-400 mx-auto mb-3"></i>
-                        <h3 class="font-bold text-slate-700">Chưa ghi nhận dị ứng nào của Mi</h3>
-                        <p class="text-xs text-slate-500 mt-1">Bấm "+ Thêm Hồ Sơ Dị Ứng" nếu Mi có mẫn cảm với thuốc hay thực phẩm.</p>
+                        <h3 class="font-bold text-slate-700">Chưa ghi nhận dị ứng nào của ${name}</h3>
+                        <p class="text-xs text-slate-500 mt-1">Bấm "+ Thêm Hồ Sơ Dị Ứng" nếu có mẫn cảm với thuốc hay thực phẩm.</p>
                     </div>`;
                 lucide.createIcons();
                 return;
@@ -2034,7 +2405,8 @@
 
         function confirmClearAllData() {
             openConfirmModal("Xóa TOÀN BỘ dữ liệu?", "Hành động này sẽ làm sạch tất cả đợt bệnh, đơn thuốc, lịch sử nhiệt độ.", () => {
-                appData = { illnesses: [], prescriptions: [], allergies: [] };
+                const currentProfile = appData.profile;
+                appData = { profile: currentProfile, illnesses: [], prescriptions: [], allergies: [] };
                 saveData();
                 showToast("Đã xóa sạch dữ liệu!");
             });
@@ -2060,6 +2432,10 @@
             playActionClickSound();
             const container = document.getElementById('doctorReportContent');
             const todayStr = new Date().toLocaleDateString('vi-VN');
+            const name = getProfileName();
+            const handbookTitle = getHandbookTitle();
+            const ageObj = calculateAgeFromDob(appData.profile?.dob);
+            const ageText = ageObj ? ` (${ageObj.ageText})` : '';
 
             const illnessRows = appData.illnesses.map(ill => `
                 <div style="border:1px solid #cbd5e1; padding:10px; border-radius:12px; margin-bottom:10px; background:#ffffff;">
@@ -2087,8 +2463,9 @@
             container.innerHTML = `
                 <div style="font-family:sans-serif; line-height:1.5;">
                     <div style="text-align:center; border-bottom:2px solid #0f766e; padding-bottom:10px; margin-bottom:15px;">
-                        <h2 style="font-size:18px; font-weight:bold; color:#0f766e; margin:0;">BÁO CÁO LỊCH SỬ BỆNH & Y LỆNH THUỐC</h2>
-                        <p style="margin:2px 0;">Bệnh nhân / Người theo dõi: <strong>MI</strong> • Ngày xuất báo cáo: ${todayStr}</p>
+                        <h2 style="font-size:18px; font-weight:bold; color:#0f766e; margin:0;">BÁO CÁO LỊCH SỬ BỆNH & Y LỆNH THUỐC (${handbookTitle.toUpperCase()})</h2>
+                        <p style="margin:4px 0 0 0;">Bệnh nhân / Người theo dõi: <strong style="color:#0d9488; font-size:15px;">${name.toUpperCase()}</strong>${ageText} • Ngày xuất: ${todayStr}</p>
+                        ${appData.profile?.defaultWeight ? `<p style="margin:2px 0; color:#64748b; font-size:11px;">Cân nặng: ${appData.profile.defaultWeight} kg ${appData.profile.dob ? '• Ngày sinh: ' + appData.profile.dob : ''}</p>` : ''}
                     </div>
 
                     <div style="margin-bottom:15px;">
