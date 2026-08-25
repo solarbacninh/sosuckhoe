@@ -1192,44 +1192,74 @@
     <!-- Main Logic Script -->
     <script>
         const MEDICINE_DATABASE = [
+            // 1. HẠ SỐT & GIẢM ĐAU (FEVER & PAIN RELIEF)
             { name: "Hapacol 80mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 6, maxKg: 10, isAntibiotic: false, notes: "Paracetamol cho trẻ sơ sinh & nhỏ tuổi (6-10kg)", keywords: ["hapacol", "paracetamol", "sốt", "80mg"] },
             { name: "Hapacol 150mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 10, maxKg: 16, isAntibiotic: false, notes: "Hạ sốt, giảm đau vị cam dễ uống (10-16kg)", keywords: ["hapacol", "paracetamol", "sốt", "150mg"] },
             { name: "Hapacol 250mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 16, maxKg: 25, isAntibiotic: false, notes: "Hạ sốt, giảm đau trẻ em (16-25kg)", keywords: ["hapacol", "paracetamol", "sốt", "250mg"] },
+            { name: "Hapacol 325mg", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 25, maxKg: 35, isAntibiotic: false, notes: "Hạ sốt cho trẻ lớn & học sinh tiểu học (25-35kg)", keywords: ["hapacol", "paracetamol", "sốt", "325mg"] },
             { name: "Hapacol 500mg", category: "Hạ sốt", dosageRef: "1 viên/lần", perKgDoseMg: 12.5, minKg: 35, maxKg: 70, isAntibiotic: false, notes: "Hạ sốt, giảm đau cho thiếu niên & người lớn", keywords: ["hapacol", "paracetamol", "sốt", "500mg"] },
-            { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên đặt/lần", perKgDoseMg: 12.5, minKg: 6, maxKg: 10, isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được (6-10kg)", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt"] },
-            { name: "Efferalgan 150mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 10, maxKg: 16, isAntibiotic: false, notes: "Dùng khi trẻ sốt cao (10-16kg)", keywords: ["efferalgan", "sốt", "sủi"] },
-            { name: "Efferalgan 250mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 16, maxKg: 25, isAntibiotic: false, notes: "Hạ sốt dạng sủi bột pha nước (16-25kg)", keywords: ["efferalgan", "sốt"] },
+            { name: "Efferalgan 80mg (Đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên đặt/lần", perKgDoseMg: 12.5, minKg: 6, maxKg: 10, isAntibiotic: false, notes: "Dùng khi trẻ nôn trớ không uống được (6-10kg)", keywords: ["efferalgan", "đặt đít", "hậu môn", "sốt", "80mg"] },
+            { name: "Efferalgan 150mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 10, maxKg: 16, isAntibiotic: false, notes: "Dùng khi trẻ sốt cao (10-16kg)", keywords: ["efferalgan", "sốt", "sủi", "150mg"] },
+            { name: "Efferalgan 250mg (Đặt / Gói sủi)", category: "Hạ sốt", dosageRef: "1 gói/lần", perKgDoseMg: 12.5, minKg: 16, maxKg: 25, isAntibiotic: false, notes: "Hạ sốt dạng sủi bột pha nước (16-25kg)", keywords: ["efferalgan", "sốt", "250mg"] },
             { name: "Efferalgan 300mg (Viên đặt hậu môn)", category: "Hạ sốt", dosageRef: "1 viên đặt/lần", perKgDoseMg: 12.5, minKg: 20, maxKg: 30, isAntibiotic: false, notes: "Viên đặt đít cho trẻ lớn khi nôn trớ (20-30kg)", keywords: ["efferalgan", "đặt hậu môn", "300mg"] },
             { name: "Doliprane Siro 2.4% (Pháp)", category: "Hạ sốt", dosageRef: "Theo nấc xi-lanh kg", perKgDoseMg: 15, minKg: 3, maxKg: 26, isAntibiotic: false, notes: "Siro hạ sốt kèm xi-lanh đo đúng số kg của trẻ (3-26kg)", keywords: ["doliprane", "siro", "sốt", "pháp"] },
             { name: "Siro Paracetamol 120mg/5ml", category: "Hạ sốt", dosageRef: "5.0 - 7.5 ml/lần", perKgDoseMg: 12.5, minKg: 4, maxKg: 20, isAntibiotic: false, notes: "Siro hạ sốt vị ngọt dễ uống cho trẻ nhỏ", keywords: ["siro", "paracetamol", "sốt"] },
             { name: "Siro Nurofen 100mg/5ml (Ibuprofen)", category: "Hạ sốt", dosageRef: "10mg/kg mỗi 6-8h", perKgDoseMg: 10, minKg: 7, maxKg: 30, isAntibiotic: false, notes: "Kháng viêm hạ sốt khi Paracetamol kém đáp ứng (>3 tháng tuổi)", keywords: ["nurofen", "ibuprofen", "sốt cao", "kháng viêm"] },
+            { name: "Siro Sotamic 100mg/5ml (Ibuprofen)", category: "Hạ sốt", dosageRef: "5ml/lần (mỗi 6-8h)", perKgDoseMg: 10, minKg: 7, maxKg: 30, isAntibiotic: false, notes: "Giảm đau hạ sốt kháng viêm dạng siro", keywords: ["sotamic", "ibuprofen", "sốt"] },
             { name: "Panadol Trẻ Em (Siro dâu)", category: "Hạ sốt", dosageRef: "5-10ml/lần", perKgDoseMg: 12, minKg: 5, maxKg: 20, isAntibiotic: false, notes: "Siro hạ sốt vị dâu thơm ngon dễ uống", keywords: ["panadol", "sốt", "paracetamol"] },
-            { name: "Oresol Hydrite (Gói pha 200ml)", category: "Tiêu hóa", dosageRef: "Uống từng thìa theo nhu cầu", isAntibiotic: false, minKg: 3, maxKg: 60, notes: "Bù nước & điện giải RẤT QUAN TRỌNG khi trẻ sốt cao", keywords: ["oresol", "bù nước", "điện giải"] },
+            { name: "Oresol Hydrite (Gói pha 200ml)", category: "Tiêu hóa", dosageRef: "Uống từng thìa theo nhu cầu", isAntibiotic: false, minKg: 3, maxKg: 60, notes: "Bù nước & điện giải RẤT QUAN TRỌNG khi trẻ sốt cao/tiêu chảy", keywords: ["oresol", "bù nước", "điện giải", "hydrite"] },
+            { name: "Oresol Ozy vị cam (Gói pha 200ml)", category: "Tiêu hóa", dosageRef: "Uống nhấp từng ngụm nhỏ", isAntibiotic: false, minKg: 3, maxKg: 60, notes: "Bù nước điện giải vị cam thơm ngọt dễ uống cho bé", keywords: ["oresol", "ozy", "bù nước", "điện giải"] },
 
+            // 2. HO - PHẾ QUẢN & HÔ HẤP (COUGH & RESPIRATORY)
             { name: "Siro Prospan (Nhập Đức)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Siro ho thảo dược lá thường xuân nổi tiếng của Đức", keywords: ["prospan", "ho", "siro", "thảo dược", "lá thường xuân"] },
             { name: "Siro Astex (BV Nhi Đồng 1)", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", minKg: 4, maxKg: 35, isAntibiotic: false, notes: "Siro ho húng chanh, tần dày lá của BV Nhi Đồng 1", keywords: ["astex", "ho", "húng chanh", "nhi đồng"] },
+            { name: "Siro Muhi Đỏ / Hồng (Ho & Sốt Nhật)", category: "Ho - Phế quản", dosageRef: "3ml - 5ml x 3 lần/ngày", minKg: 4, maxKg: 25, isAntibiotic: false, notes: "Siro ho sốt hắt hơi sổ mũi trẻ em của Nhật", keywords: ["muhi", "ho Nhật", "ho sốt", "siro Nhật"] },
+            { name: "Siro Muhi Xanh Lá (Sổ Mũi Nhật)", category: "Ho - Phế quản", dosageRef: "3ml - 5ml x 3 lần/ngày", minKg: 4, maxKg: 25, isAntibiotic: false, notes: "Siro chuyên giảm hắt hơi, ngạt mũi, chảy nước mũi", keywords: ["muhi", "sổ mũi", "xanh lá", "Nhật"] },
+            { name: "Siro Muhi Xanh Dương (Ho Đờm Nhật)", category: "Ho - Phế quản", dosageRef: "3ml - 5ml x 3 lần/ngày", minKg: 4, maxKg: 25, isAntibiotic: false, notes: "Siro long đờm, giảm ho có đờm cho trẻ", keywords: ["muhi", "ho đờm", "xanh dương"] },
             { name: "Siro Bisolvon Trẻ Em (Bromhexin)", category: "Ho - Phế quản", dosageRef: "2.5ml - 5ml x 3 lần/ngày", minKg: 6, maxKg: 40, isAntibiotic: false, notes: "Siro long đờm, loãng dịch nhầy đường hô hấp", keywords: ["bisolvon", "long đờm", "ho"] },
             { name: "Siro Halixol (Ambroxol)", category: "Ho - Phế quản", dosageRef: "2.5ml x 2-3 lần/ngày", minKg: 6, maxKg: 40, isAntibiotic: false, notes: "Long đờm hiệu quả cho viêm phế quản", keywords: ["halixol", "ambroxol", "long đờm"] },
+            { name: "Siro Mucosolvan Trẻ Em (Ambroxol Đức)", category: "Ho - Phế quản", dosageRef: "2.5ml x 2 lần/ngày", minKg: 5, maxKg: 35, isAntibiotic: false, notes: "Siro long đờm viêm phế quản nhập khẩu Đức", keywords: ["mucosolvan", "ambroxol", "long đờm"] },
+            { name: "Siro Ho Ích Nhi (Quất, Húng chanh)", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", minKg: 3, maxKg: 35, isAntibiotic: false, notes: "Siro ho thảo dược quất, húng chanh, mật ong an toàn cho sơ sinh", keywords: ["ích nhi", "ho", "quất húng chanh"] },
             { name: "Siro Bảo Thanh Trẻ Em", category: "Ho - Phế quản", dosageRef: "5ml x 3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Giảm ho dịu họng từ mật ong và thảo dược", keywords: ["bảo thanh", "ho", "thảo dược"] },
+            { name: "Ventolin Nebules 2.5mg (Khí dung Salbutamol)", category: "Ho - Phế quản", dosageRef: "1 tép khí dung / lần", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Dung dịch khí dung giãn phế quản khi co thắt/khò khè (theo đơn BS)", keywords: ["ventolin", "khí dung", "khò khè", "salbutamol"] },
+            { name: "Pulmicort Respules 0.5mg (Khí dung Budesonide)", category: "Ho - Phế quản", dosageRef: "1 tép khí dung / lần", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Khí dung chống viêm phế quản, xơ thanh quản (theo đơn BS)", keywords: ["pulmicort", "khí dung", "budesonide", "viêm thanh quản"] },
 
+            // 3. KHÁNG SINH TRẺ EM (PEDIATRIC ANTIBIOTICS)
             { name: "Augmentin 250mg/31.25mg", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 8, maxKg: 18, isAntibiotic: true, notes: "Amoxicillin + Acid Clavulanic điều trị viêm tai họng", keywords: ["augmentin", "kháng sinh", "250mg"] },
             { name: "Augmentin 500mg/62.5mg", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 18, maxKg: 35, isAntibiotic: true, notes: "Kháng sinh hô hấp liều cao cho trẻ em", keywords: ["augmentin", "kháng sinh", "500mg"] },
-            { name: "Zinnat 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefuroxime axetil điều trị viêm phế quản, tai mũi họng", keywords: ["zinnat", "cefuroxime", "kháng sinh"] },
+            { name: "Zinnat 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefuroxime axetil điều trị viêm phế quản, tai mũi họng", keywords: ["zinnat", "cefuroxime", "kháng sinh", "125mg"] },
             { name: "Zinnat 250mg (Viên/Gói cốm)", category: "Kháng sinh", dosageRef: "1 gói x 2 lần/ngày", minKg: 16, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh thế hệ 2 đường uống", keywords: ["zinnat", "kháng sinh", "250mg"] },
-            { name: "Ceclor 125mg (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 3 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefaclor vị dâu điều trị viêm phế quản, tai giữa", keywords: ["ceclor", "cefaclor", "kháng sinh"] },
+            { name: "Ceclor 125mg/5ml (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "1 gói x 3 lần/ngày", minKg: 6, maxKg: 16, isAntibiotic: true, notes: "Cefaclor vị dâu điều trị viêm phế quản, tai giữa", keywords: ["ceclor", "cefaclor", "kháng sinh", "125mg"] },
+            { name: "Ceclor 250mg (Gói cốm pha nước)", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 16, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh Cefaclor nhi khoa", keywords: ["ceclor", "cefaclor", "250mg"] },
             { name: "Zithromax 200mg/5ml (Azithromycin)", category: "Kháng sinh", dosageRef: "10mg/kg x 1 lần/ngày (3 ngày)", minKg: 8, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh liều ngắn 3 ngày cho nhiễm khuẩn hô hấp", keywords: ["zithromax", "azithromycin", "kháng sinh"] },
             { name: "Orelox 40mg/5ml (Cefpodoxime)", category: "Kháng sinh", dosageRef: "5mg/kg x 2 lần/ngày", minKg: 6, maxKg: 25, isAntibiotic: true, notes: "Kháng sinh Cefpodoxime siro điều trị viêm họng tai giữa", keywords: ["orelox", "cefpodoxime", "kháng sinh"] },
+            { name: "Cefdinir / Omnicef 125mg/5ml", category: "Kháng sinh", dosageRef: "7mg/kg x 2 lần/ngày", minKg: 7, maxKg: 28, isAntibiotic: true, notes: "Kháng sinh Cefdinir thế hệ 3 điều trị viêm mũi xoang, tai giữa", keywords: ["cefdinir", "omnicef", "kháng sinh"] },
+            { name: "Klacid 125mg/5ml (Clarithromycin)", category: "Kháng sinh", dosageRef: "7.5mg/kg x 2 lần/ngày", minKg: 7, maxKg: 30, isAntibiotic: true, notes: "Kháng sinh Macrolide trị ho kéo dài, ho gà, viêm phế quản", keywords: ["klacid", "clarithromycin", "kháng sinh"] },
+            { name: "Ospamox 250mg (Amoxicillin bột)", category: "Kháng sinh", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 6, maxKg: 20, isAntibiotic: true, notes: "Kháng sinh Amoxicillin đơn thành phần cho trẻ em", keywords: ["ospamox", "amoxicillin", "kháng sinh"] },
+            { name: "Cefixim 50mg/5ml (Gói cốm pha siro)", category: "Kháng sinh", dosageRef: "4mg/kg x 2 lần/ngày", minKg: 6, maxKg: 25, isAntibiotic: true, notes: "Kháng sinh Cefixime thế hệ 3 đường uống", keywords: ["cefixim", "cefixime", "kháng sinh"] },
 
+            // 4. TIÊU HÓA, MEN VI SINH & KẼM (DIGESTIVE, PROBIOTICS & ZINC)
             { name: "Smecta 3g (Diosmectite)", category: "Tiêu hóa", dosageRef: "1 gói x 2-3 lần/ngày", minKg: 5, maxKg: 40, isAntibiotic: false, notes: "Bao niêm mạc ruột khi tiêu chảy, đi ngoài phân sống", keywords: ["smecta", "tiêu chảy", "đi ngoài"] },
             { name: "Enterogermina (Ống 5ml)", category: "Tiêu hóa", dosageRef: "1-2 ống/ngày", minKg: 3, maxKg: 40, isAntibiotic: false, notes: "Men vi sinh dạng ống bổ sung bào tử Bacillus clausii", keywords: ["enterogermina", "men vi sinh"] },
             { name: "Bioflora 100mg (Gói bột)", category: "Tiêu hóa", dosageRef: "1-2 gói/ngày", minKg: 4, maxKg: 40, isAntibiotic: false, notes: "Men nấm Saccharomyces boulardii kháng lại kháng sinh", keywords: ["bioflora", "men nấm", "tiêu hóa"] },
+            { name: "BioGaia Protectis (Giọt 5ml - Thụy Điển)", category: "Tiêu hóa", dosageRef: "5 giọt / 1 lần / ngày", minKg: 2, maxKg: 25, isAntibiotic: false, notes: "Men vi sinh cải thiện khóc oằn mình, nôn trớ, táo bón, tiêu chảy", keywords: ["biogaia", "men vi sinh", "nôn trớ", "táo bón"] },
+            { name: "Kẽm Zinc-Kid 10mg / Farzincol", category: "Tiêu hóa", dosageRef: "1/2 - 1 gói/ngày (14 ngày)", minKg: 3, maxKg: 30, isAntibiotic: false, notes: "Bổ sung Kẽm RẤT QUAN TRỌNG giúp phục hồi niêm mạc ruột khi tiêu chảy", keywords: ["kẽm", "zinc", "zinc kid", "tiêu chảy"] },
+            { name: "Siro Menpeptine Trẻ Em", category: "Tiêu hóa", dosageRef: "2.5ml - 5ml / lần sau ăn", minKg: 4, maxKg: 30, isAntibiotic: false, notes: "Enzyme tiêu hóa giảm đầy bụng, chướng hơi, ăn không tiêu", keywords: ["menpeptine", "enzyme", "đầy bụng"] },
+            { name: "Siro Infacol / Simethicone Air-X", category: "Tiêu hóa", dosageRef: "0.5ml trước mỗi cữ sữa", minKg: 2, maxKg: 15, isAntibiotic: false, notes: "Giảm bóng khí xẹp bong bóng hơi trong dạ dày, trị đầy hơi nôn trớ", keywords: ["infacol", "airx", "simethicone", "nôn trớ", "đầy hơi"] },
 
+            // 5. DỊ ỨNG & MŨI HỌNG (ALLERGY & NASAL CARE)
             { name: "Siro Aerius 0.5mg/ml (Desloratadine)", category: "Dị ứng", dosageRef: "2.5ml x 1 lần/ngày", minKg: 6, maxKg: 30, isAntibiotic: false, notes: "Kháng Histamin giảm sổ mũi, ngứa dị ứng, nổi mề đày", keywords: ["aerius", "desloratadine", "sổ mũi", "dị ứng"] },
             { name: "Siro Zyrtec 1mg/ml (Cetirizine)", category: "Dị ứng", dosageRef: "2.5ml - 5ml/ngày", minKg: 8, maxKg: 35, isAntibiotic: false, notes: "Siro chống dị ứng viêm mũi thời tiết", keywords: ["zyrtec", "cetirizine", "dị ứng"] },
             { name: "Nước muối ưu trương Nebusal 3%", category: "Dị ứng", dosageRef: "Xịt/Nhỏ 2-3 lần/ngày", minKg: 2, maxKg: 60, isAntibiotic: false, notes: "Giảm nghẹt mũi, loãng nhầy mũi họng hiệu quả", keywords: ["nebusal", "xịt mũi", "nghẹt mũi"] },
+            { name: "Nước muối Fysoline Hồng & Vàng (Tép nhỏ)", category: "Dị ứng", dosageRef: "Nhỏ 2-4 lần/ngày", minKg: 1, maxKg: 50, isAntibiotic: false, notes: "Tép nước muối đơn liều vệ sinh mũi mắt kháng khuẩn cho sơ sinh", keywords: ["fysoline", "nước muối", "nhỏ mũi"] },
+            { name: "Xịt mũi Sterimar Baby (Nước biển sâu)", category: "Dị ứng", dosageRef: "Xịt 2-3 lần/ngày", minKg: 3, maxKg: 25, isAntibiotic: false, notes: "Xịt rửa mũi vi hạt vệ sinh khoang mũi nhẹ nhàng cho bé", keywords: ["sterimar", "xịt mũi", "nước biển"] },
+            { name: "Otrivin 0.05% Trẻ Em (Xylometazoline)", category: "Dị ứng", dosageRef: "1 xịt/lần (Tối đa 3-5 ngày)", minKg: 8, maxKg: 35, isAntibiotic: false, notes: "Cực kỳ hiệu quả giải ngạt co mạch mũi khi nghẹt thở (Không dùng quá 5 ngày)", keywords: ["otrivin", "nghẹt mũi", "co mạch"] },
 
-            { name: "Vitamin D3K2 Lineabon (Nho)", category: "Bổ sung", dosageRef: "6 giọt/ngày", minKg: 3, maxKg: 30, isAntibiotic: false, notes: "Hấp thu Canxi phát triển chiều cao cho trẻ", keywords: ["d3k2", "lineabon", "canxi", "vitamin"] },
-            { name: "Siro Imunoglukan P4H", category: "Bổ sung", dosageRef: "1ml / 5kg cân nặng x 1 lần/ngày", minKg: 5, maxKg: 35, isAntibiotic: false, notes: "Tăng cường miễn dịch đường hô hấp cho trẻ hay ốm vặt", keywords: ["imunoglukan", "tăng đề kháng", "miễn dịch"] }
+            // 6. BỔ SUNG, VITAMIN & TĂNG ĐỀ KHÁNG (SUPPLEMENTS & IMMUNITY)
+            { name: "Vitamin D3K2 Lineabon (Nho Thụy Sĩ)", category: "Bổ sung", dosageRef: "6 giọt/ngày", minKg: 3, maxKg: 30, isAntibiotic: false, notes: "Hấp thu Canxi phát triển chiều cao cho trẻ", keywords: ["d3k2", "lineabon", "canxi", "vitamin"] },
+            { name: "Siro Imunoglukan P4H", category: "Bổ sung", dosageRef: "1ml / 5kg cân nặng x 1 lần/ngày", minKg: 5, maxKg: 35, isAntibiotic: false, notes: "Tăng cường miễn dịch đường hô hấp cho trẻ hay ốm vặt", keywords: ["imunoglukan", "tăng đề kháng", "miễn dịch"] },
+            { name: "Siro Anaferon Trẻ Em (Nga)", category: "Bổ sung", dosageRef: "10 giọt / lần x 3 lần/ngày", minKg: 3, maxKg: 25, isAntibiotic: false, notes: "Hỗ trợ tăng sức đề kháng và phòng ngừa cảm cúm siêu vi", keywords: ["anaferon", "tăng đề kháng", "sốt siêu vi"] },
+            { name: "Siro PediaKid 22 Vitamins (Pháp)", category: "Bổ sung", dosageRef: "5ml - 10ml / ngày", minKg: 4, maxKg: 35, isAntibiotic: false, notes: "Bổ sung 22 loại Vitamin & Khoáng chất giúp bé ăn ngon", keywords: ["pediakid", "vitamin", "bổ sung"] }
         ];
 
         let appData = {
@@ -1899,7 +1929,7 @@
                     calculatedItemDosage = `${minMlSyrup} - ${maxMlSyrup} ml / lần`;
                 } else if (med.name.includes("Doliprane Siro")) {
                     calculatedItemDosage = `Rút đúng nấc ${kgInput} kg trên xi-lanh đi kèm`;
-                } else if (med.name.includes("Nurofen")) {
+                } else if (med.name.includes("Nurofen") || med.name.includes("Sotamic")) {
                     const nurofenMl = (kgInput * 0.5).toFixed(1);
                     calculatedItemDosage = `${nurofenMl} ml / lần (mỗi 6-8h, khi sốt cao)`;
                 } else if (med.name.includes("80mg")) {
@@ -1908,6 +1938,8 @@
                     calculatedItemDosage = `1 gói/viên (150mg) / lần`;
                 } else if (med.name.includes("250mg")) {
                     calculatedItemDosage = `1 gói/viên (250mg) / lần`;
+                } else if (med.name.includes("325mg")) {
+                    calculatedItemDosage = `1 gói/viên (325mg) / lần`;
                 } else if (med.name.includes("500mg")) {
                     calculatedItemDosage = `1 viên/lần`;
                 }
