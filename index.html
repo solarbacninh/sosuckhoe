@@ -1,1382 +1,451 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SmartADAS - Đo Khoảng Cách & Tốc Độ Chuẩn Camera iPhone 1x</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            adas: {
-              bg: '#0a0f1d',
-              panel: '#131b2e',
-              border: '#1f293d',
-              accent: '#38bdf8',
-              safe: '#22c55e',      /* Xanh lá 35m */
-              caution: '#eab308',   /* Vàng 55m */
-              warning: '#f97316',   /* Cam 70m */
-              danger: '#ef4444'     /* Đỏ 100m / Nguy cấp */
-            }
-          }
-        }
-      }
-    }
-  </script>
-  
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- TensorFlow.js & COCO-SSD AI Model -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-
-  <style>
-    /* Custom HUD scanline and glowing effects */
-    .hud-grid {
-      background-size: 30px 30px;
-      background-image: 
-        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
-    }
-    .glow-safe { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
-    .glow-caution { box-shadow: 0 0 20px rgba(234, 179, 8, 0.4); }
-    .glow-warning { box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); }
-    .glow-danger { box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); animation: pulseDanger 0.8s infinite alternate; }
-    
-    @keyframes pulseDanger {
-      0% { opacity: 0.85; transform: scale(1); }
-      100% { opacity: 1; transform: scale(1.02); }
-    }
-
-    /* Range slider custom styling */
-    input[type=range] {
-      accent-color: #38bdf8;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>CAR AUTO AI ADAS</title>
+<style>
+  :root{
+    --bg:#061019; --panel:rgba(6,16,25,.82); --text:#eaf7ff;
+    --muted:#8fb2c8; --ok:#31e981; --warn:#ffd33d; --danger:#ff496c;
+    --cyan:#33d6ff; --line:#53f2a2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#02070b;color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  body{min-height:100vh}
+  .app{max-width:1500px;margin:auto;padding:12px}
+  .topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:.08em}.brand span{color:var(--cyan)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  button,.fileLabel,input,select{border:1px solid #24475d;background:#0a1a25;color:var(--text);border-radius:10px;padding:9px 12px}
+  button,.fileLabel{cursor:pointer}.fileLabel input{display:none}
+  button:hover,.fileLabel:hover{border-color:var(--cyan)}
+  .stage{position:relative;aspect-ratio:16/9;background:#000;border:1px solid #1a3445;border-radius:16px;overflow:hidden}
+  #video,#overlay{position:absolute;inset:0;width:100%;height:100%}
+  #video{object-fit:cover}
+  #overlay{pointer-events:none}
+  .hudTop{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+  .pill{background:rgba(0,0,0,.56);backdrop-filter:blur(8px);border:1px solid rgba(122,210,255,.25);border-radius:999px;padding:7px 11px;font-size:13px}
+  .warning{position:absolute;left:50%;top:16%;transform:translateX(-50%);font-weight:900;font-size:clamp(18px,3vw,44px);text-align:center;text-shadow:0 2px 10px #000;pointer-events:none}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:10px;margin-top:10px}
+  .panel{background:var(--panel);border:1px solid #173244;border-radius:14px;padding:12px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .metric{background:#08151e;border:1px solid #173244;border-radius:10px;padding:10px}
+  .metric b{display:block;font-size:19px}.metric small{color:var(--muted)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 0}
+  .row label{color:var(--muted);min-width:130px;font-size:13px}
+  input[type=range]{padding:0;width:170px}
+  .badge{font-size:12px;padding:4px 7px;border-radius:999px;border:1px solid #31536a;color:#aad8ef}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)}
+  .log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:pre-wrap;max-height:190px;overflow:auto;color:#bfe7fa}
+  .footer{color:#7597aa;font-size:12px;padding:9px 3px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
-<body class="bg-adas-bg text-slate-100 min-h-screen flex flex-col font-sans select-none antialiased">
-
-  <!-- ================= TOP HEADER HUD ================= -->
-  <header class="bg-adas-panel border-b border-adas-border px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-lg sticky top-0 z-40">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md">
-        <i class="fa-solid fa-car-on text-xl"></i>
-      </div>
-      <div>
-        <h1 class="text-base sm:text-lg font-bold tracking-wider text-sky-400 flex items-center gap-2">
-          SMART ADAS <span class="text-xs px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800">iPhone 1x</span>
-        </h1>
-        <p class="text-xs text-slate-400 hidden sm:block">Đo khoảng cách an toàn TT 31/2019/TT-BGTVT</p>
-      </div>
-    </div>
-
-    <!-- Live Status Indicators -->
-    <div class="flex items-center gap-2 sm:gap-4 text-xs font-mono">
-      <!-- Weather Toggle Button -->
-      <button id="btnWeatherToggle" onclick="toggleWeatherCondition()" class="px-2.5 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-1.5 hover:bg-amber-500/20 transition">
-        <i id="weatherIcon" class="fa-solid fa-sun text-amber-400"></i>
-        <span id="weatherText" class="font-semibold">Khô ráo</span>
-      </button>
-
-      <!-- GPS Toggle Button -->
-      <button id="btnGpsToggle" onclick="toggleGPS()" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 flex items-center gap-1.5 hover:bg-slate-700 transition">
-        <i class="fa-solid fa-location-crosshairs text-sky-400"></i>
-        <span id="gpsStatusText">Bật GPS</span>
-      </button>
-
-      <!-- Audio Warning Mute/Unmute -->
-      <button id="btnAudioToggle" onclick="toggleAudio()" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center hover:text-white transition">
-        <i id="audioIcon" class="fa-solid fa-volume-high text-sky-400"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- ================= NAVIGATION TABS ================= -->
-  <nav class="bg-adas-panel/60 border-b border-adas-border px-4 flex space-x-1 sm:space-x-3 overflow-x-auto text-xs sm:text-sm font-medium">
-    <button onclick="switchTab('hud')" id="tab-hud" class="py-2.5 px-3 border-b-2 border-sky-400 text-sky-400 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-gauge-high"></i> Màn Hình ADAS
-    </button>
-    <button onclick="switchTab('rules')" id="tab-rules" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-book-open"></i> Quy Định Tốc Độ (TT 31)
-    </button>
-    <button onclick="switchTab('iphone')" id="tab-iphone" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-brands fa-apple"></i> Hiệu Chuẩn iPhone 1x
-    </button>
-    <button onclick="switchTab('guide')" id="tab-guide" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-code"></i> Mã Nguồn Python
-    </button>
-  </nav>
-
-  <!-- ================= MAIN CONTENT AREA ================= -->
-  <main class="flex-1 p-3 sm:p-5 max-w-7xl w-full mx-auto space-y-4">
-
-    <!-- ================= TAB 1: HUD & CAMERA ================= -->
-    <div id="view-hud" class="space-y-4">
-      
-      <!-- Top Infographic Quick Bar (Theo quy chuẩn hình ảnh) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-        <div id="badge-rule-60" class="p-2 rounded-xl bg-adas-panel border border-emerald-500/30 flex flex-col items-center justify-center transition-all">
-          <span class="text-slate-400 text-[11px]">V ≤ 60 km/h</span>
-          <span class="text-sm sm:text-base font-bold text-emerald-400">≥ 35m</span>
-          <span class="text-[10px] text-emerald-500/80">Khô ráo</span>
-        </div>
-        <div id="badge-rule-80" class="p-2 rounded-xl bg-adas-panel border border-yellow-500/30 flex flex-col items-center justify-center transition-all">
-          <span class="text-slate-400 text-[11px]">60 < V ≤ 80 km/h</span>
-          <span class="text-sm sm:text-base font-bold text-yellow-400">≥ 55m</span>
-          <span class="text-[10px] text-yellow-500/80">Khô ráo</span>
-        </div>
-        <div id="badge-rule-100" class="p-2 rounded-xl bg-adas-panel border border-orange-500/30 flex flex-col items-center justify-center transition-all">
-          <span class="text-slate-400 text-[11px]">80 < V ≤ 100 km/h</span>
-          <span class="text-sm sm:text-base font-bold text-orange-400">≥ 70m</span>
-          <span class="text-[10px] text-orange-500/80">Khô ráo</span>
-        </div>
-        <div id="badge-rule-120" class="p-2 rounded-xl bg-adas-panel border border-rose-500/30 flex flex-col items-center justify-center transition-all">
-          <span class="text-slate-400 text-[11px]">100 < V ≤ 120 km/h</span>
-          <span class="text-sm sm:text-base font-bold text-rose-400">≥ 100m</span>
-          <span class="text-[10px] text-rose-500/80">Khô ráo</span>
-        </div>
-      </div>
-
-      <!-- Main Screen Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        
-        <!-- Left 2 Cols: Video / Simulation Display Canvas -->
-        <div class="lg:col-span-2 bg-adas-panel rounded-2xl border border-adas-border overflow-hidden relative shadow-2xl flex flex-col">
-          
-          <!-- Source Toolbar -->
-          <div class="bg-slate-900/90 px-3 py-2 border-b border-adas-border flex flex-wrap items-center justify-between gap-2 z-10 text-xs">
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-400">Nguồn hình ảnh:</span>
-              <select id="sourceSelect" onchange="changeSourceMode(this.value)" class="bg-slate-800 text-sky-400 border border-slate-700 rounded-lg px-2 py-1 focus:outline-none focus:border-sky-500 font-semibold">
-                <option value="simulation">🚗 Mô Phỏng 3D Giao Thông</option>
-                <option value="camera">📷 Camera Trực Tiếp (iPhone 1x)</option>
-                <option value="sample_video">🎞️ Video Mẫu Đường Phố</option>
-              </select>
-            </div>
-
-            <!-- Mobile Capture fallback / Switch Cam -->
-            <div class="flex items-center gap-2">
-              <label for="videoFileInput" class="cursor-pointer px-2.5 py-1 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg flex items-center gap-1">
-                <i class="fa-solid fa-camera"></i> <span class="hidden sm:inline">Quay/Tải Clip</span>
-              </label>
-              <input type="file" id="videoFileInput" accept="video/*" capture="environment" class="hidden" onchange="handleFileVideo(this)">
-              
-              <button id="btnSwitchCam" onclick="switchCameraFacing()" class="px-2.5 py-1 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 rounded-lg hidden">
-                <i class="fa-solid fa-rotate"></i> Đổi Cam
-              </button>
-            </div>
-          </div>
-
-          <!-- Video / Canvas Render Area -->
-          <div class="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden hud-grid">
-            <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
-            <canvas id="hudCanvas" class="relative z-10 w-full h-full"></canvas>
-
-            <!-- Loading Spinner / AI Status Overlay -->
-            <div id="aiLoadingOverlay" class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center z-20 transition-opacity duration-300">
-              <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
-              <p class="mt-3 text-sm text-sky-300 font-medium">Đang tải mô hình AI Nhận Diện Xe (TensorFlow)...</p>
-            </div>
-
-            <!-- Weather HUD badge overlay -->
-            <div id="weatherHudBadge" class="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-amber-500/50 text-amber-300 text-xs flex items-center gap-1.5 font-mono">
-              <i class="fa-solid fa-sun text-amber-400"></i> Khô ráo: Chuẩn 100%
-            </div>
-
-            <!-- Calibration Pill overlay -->
-            <div class="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-sky-500/50 text-sky-300 text-xs flex items-center gap-1.5 font-mono">
-              <i class="fa-brands fa-apple text-slate-300"></i> iPhone 1x (f=820px)
-            </div>
-          </div>
-
-          <!-- Bottom Warning Bar -->
-          <div id="warningBanner" class="p-3 bg-emerald-950/80 border-t border-emerald-500/40 text-emerald-300 flex items-center justify-between transition-all">
-            <div class="flex items-center space-x-2.5">
-              <div id="warningDot" class="w-3.5 h-3.5 rounded-full bg-emerald-500"></div>
-              <span id="warningText" class="font-bold text-sm tracking-wide">TRẠNG THÁI: KHOẢNG CÁCH AN TOÀN</span>
-            </div>
-            <div class="text-xs font-mono font-bold" id="distanceDeltaText">
-              D = 65.0m (Tối thiểu: 55m)
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Col: Real-time Cockpit Metrics & Controls -->
-        <div class="space-y-4 flex flex-col">
-          
-          <!-- Cockpit Meters Box -->
-          <div class="bg-adas-panel rounded-2xl p-4 border border-adas-border shadow-xl space-y-4">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>Thông Số Vận Hành</span>
-              <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Real-time</span>
-            </h2>
-
-            <!-- Big Metric 1: Khoảng Cách Xe Phía Trước -->
-            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="text-xs text-slate-400">Khoảng Cách Hiện Tại</div>
-                <div class="text-3xl font-extrabold font-mono tracking-tight text-white flex items-baseline gap-1">
-                  <span id="metricDistance">65.0</span>
-                  <span class="text-base text-slate-400 font-normal">mét</span>
-                </div>
-              </div>
-              <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 text-xl">
-                <i class="fa-solid fa-arrows-left-right-to-line"></i>
-              </div>
-            </div>
-
-            <!-- Big Metric 2: Tốc Độ Xe (Speed) -->
-            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="text-xs text-slate-400">Tốc Độ Xe (V)</div>
-                <div class="text-3xl font-extrabold font-mono tracking-tight text-sky-400 flex items-baseline gap-1">
-                  <span id="metricSpeed">70</span>
-                  <span class="text-base text-slate-400 font-normal">km/h</span>
-                </div>
-              </div>
-              <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl">
-                <i class="fa-solid fa-gauge"></i>
-              </div>
-            </div>
-
-            <!-- Big Metric 3: Khoảng Cách Tối Thiểu Bắt Buộc Theo Luật -->
-            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="text-xs text-slate-400">KC Tối Thiểu Quy Định</div>
-                <div class="text-2xl font-bold font-mono text-yellow-400 flex items-baseline gap-1">
-                  <span id="metricMinSafe">55</span>
-                  <span class="text-sm text-slate-400 font-normal">mét</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span id="metricBracket" class="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-300 font-medium">60 < V ≤ 80</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Simulation Interactive Controls -->
-          <div class="bg-adas-panel rounded-2xl p-4 border border-adas-border shadow-xl space-y-3 flex-1">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>Điều Khiển Mô Phỏng</span>
-              <i class="fa-solid fa-sliders text-sky-400"></i>
-            </h2>
-
-            <!-- Speed Slider -->
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs text-slate-300 font-medium">
-                <span>Tốc độ giả lập (V):</span>
-                <span class="text-sky-400 font-bold font-mono" id="sliderSpeedVal">70 km/h</span>
-              </div>
-              <input type="range" id="simSpeedRange" min="0" max="130" value="70" step="5" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer" oninput="updateSimSpeed(this.value)">
-              <div class="flex justify-between text-[10px] text-slate-500 font-mono">
-                <span>0</span>
-                <span>60</span>
-                <span>80</span>
-                <span>100</span>
-                <span>120+</span>
-              </div>
-            </div>
-
-            <!-- Distance Slider (Simulation) -->
-            <div id="simDistControlGroup" class="space-y-1.5 pt-2">
-              <div class="flex justify-between text-xs text-slate-300 font-medium">
-                <span>Khoảng cách xe trước (Mô phỏng):</span>
-                <span class="text-emerald-400 font-bold font-mono" id="sliderDistVal">65 mét</span>
-              </div>
-              <input type="range" id="simDistRange" min="5" max="130" value="65" step="1" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer" oninput="updateSimDistance(this.value)">
-              <div class="flex justify-between text-[10px] text-slate-500 font-mono">
-                <span>5m</span>
-                <span>35m</span>
-                <span>55m</span>
-                <span>70m</span>
-                <span>100m+</span>
-              </div>
-            </div>
-
-            <!-- Quick Scenario Buttons -->
-            <div class="pt-2 grid grid-cols-2 gap-2 text-xs">
-              <button onclick="setScenario(40, 25)" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-slate-300">
-                🏙️ Phố (40km/h - 25m)
-              </button>
-              <button onclick="setScenario(75, 50)" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-slate-300">
-                🛣️ Quốc lộ (75km/h - 50m)
-              </button>
-              <button onclick="setScenario(95, 80)" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-slate-300">
-                🏎️ Cao tốc (95km/h - 80m)
-              </button>
-              <button onclick="setScenario(110, 45)" class="py-1.5 px-2 bg-rose-950/80 hover:bg-rose-900/80 rounded-lg border border-rose-800 text-rose-300 font-semibold">
-                ⚠️ Nguy Cấp (110km/h - 45m)
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================= TAB 2: RULES INFOGRAPHIC (TT 31/2019/TT-BGTVT) ================= -->
-    <div id="view-rules" class="hidden space-y-4">
-      <div class="bg-adas-panel rounded-2xl p-4 sm:p-6 border border-adas-border space-y-6">
-        
-        <div class="border-b border-adas-border pb-4">
-          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-sky-950 text-sky-400 border border-sky-800">
-            Thông tư 31/2019/TT-BGTVT
-          </span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white mt-2">
-            Quy Định Khoảng Cách An Toàn Giữa Hai Xe Khi Tham Gia Giao Thông
-          </h2>
-          <p class="text-sm text-slate-400 mt-1">
-            Quy chuẩn tính khoảng cách an toàn tối thiểu theo tốc độ lưu hành trong điều kiện thời tiết khô ráo và bất lợi.
-          </p>
-        </div>
-
-        <!-- 1. Bảng trực quan điều kiện thuận lợi -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-amber-400 font-bold text-base">
-            <i class="fa-solid fa-sun text-lg"></i>
-            <h3>1. Điều kiện thuận lợi: Mặt đường khô ráo, tầm nhìn tốt</h3>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <!-- V = 60 -->
-            <div class="p-4 rounded-xl bg-emerald-950/40 border-2 border-emerald-500/60 flex flex-col justify-between space-y-2">
-              <div class="text-xs text-slate-300 font-medium">Tốc độ lưu hành:</div>
-              <div class="text-xl font-black text-white font-mono">V = 60 km/h</div>
-              <div class="pt-2 border-t border-emerald-500/30 flex justify-between items-baseline">
-                <span class="text-xs text-emerald-300">Khoảng cách an toàn:</span>
-                <span class="text-2xl font-extrabold text-emerald-400 font-mono">35 m</span>
-              </div>
-            </div>
-
-            <!-- 60 < V <= 80 -->
-            <div class="p-4 rounded-xl bg-yellow-950/40 border-2 border-yellow-500/60 flex flex-col justify-between space-y-2">
-              <div class="text-xs text-slate-300 font-medium">Tốc độ lưu hành:</div>
-              <div class="text-xl font-black text-white font-mono">60 &lt; V ≤ 80 km/h</div>
-              <div class="pt-2 border-t border-yellow-500/30 flex justify-between items-baseline">
-                <span class="text-xs text-yellow-300">Khoảng cách an toàn:</span>
-                <span class="text-2xl font-extrabold text-yellow-400 font-mono">55 m</span>
-              </div>
-            </div>
-
-            <!-- 80 < V <= 100 -->
-            <div class="p-4 rounded-xl bg-orange-950/40 border-2 border-orange-500/60 flex flex-col justify-between space-y-2">
-              <div class="text-xs text-slate-300 font-medium">Tốc độ lưu hành:</div>
-              <div class="text-xl font-black text-white font-mono">80 &lt; V ≤ 100 km/h</div>
-              <div class="pt-2 border-t border-orange-500/30 flex justify-between items-baseline">
-                <span class="text-xs text-orange-300">Khoảng cách an toàn:</span>
-                <span class="text-2xl font-extrabold text-orange-400 font-mono">70 m</span>
-              </div>
-            </div>
-
-            <!-- 100 < V <= 120 -->
-            <div class="p-4 rounded-xl bg-rose-950/40 border-2 border-rose-500/60 flex flex-col justify-between space-y-2">
-              <div class="text-xs text-slate-300 font-medium">Tốc độ lưu hành:</div>
-              <div class="text-xl font-black text-white font-mono">100 &lt; V ≤ 120 km/h</div>
-              <div class="pt-2 border-t border-rose-500/30 flex justify-between items-baseline">
-                <span class="text-xs text-rose-300">Khoảng cách an toàn:</span>
-                <span class="text-2xl font-extrabold text-rose-400 font-mono">100 m</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
-            <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i>
-            <div>
-              <strong>Lưu ý khi V &lt; 60 km/h:</strong> Người lái xe chủ động giữ khoảng cách phù hợp với xe chạy liền trước xe của mình; khoảng cách này tùy thuộc vào mật độ phương tiện, tình hình giao thông thực tế để đảm bảo an toàn giao thông.
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. Bảng điều kiện bất lợi -->
-        <div class="space-y-3 pt-2">
-          <div class="flex items-center gap-2 text-sky-400 font-bold text-base">
-            <i class="fa-solid fa-cloud-rain text-lg"></i>
-            <h3>2. Điều kiện bất lợi: Mưa, sương mù, trơn trượt, đèo dốc, tầm nhìn hạn chế</h3>
-          </div>
-
-          <div class="p-4 rounded-xl bg-sky-950/30 border border-sky-800/80 text-sm text-slate-300 space-y-2">
-            <p>
-              Khi điều khiển xe trong các điều kiện thời tiết xấu hoặc địa hình nguy hiểm, người lái xe <strong class="text-sky-300">bắt buộc phải điều chỉnh khoảng cách an toàn lớn hơn trị số ghi trên biển báo hoặc trị số quy định khi thời tiết khô ráo</strong> (Hệ thống SmartADAS sẽ tự động tăng khoảng cách thêm <span class="font-bold text-sky-400">+30%</span>).
-            </p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================= TAB 3: IPHONE 1X CALIBRATION ================= -->
-    <div id="view-iphone" class="hidden space-y-4">
-      <div class="bg-adas-panel rounded-2xl p-4 sm:p-6 border border-adas-border space-y-6">
-        
-        <div class="border-b border-adas-border pb-4 flex items-center justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <i class="fa-brands fa-apple text-slate-200"></i> Cấu Hình Camera 1x Cho iPhone
-            </h2>
-            <p class="text-xs sm:text-sm text-slate-400 mt-1">
-              Thông số quang học chuẩn của camera góc rộng chính ($24\text{mm} - 26\text{mm}$) trên các dòng iPhone
-            </p>
-          </div>
-        </div>
-
-        <!-- Thông số kỹ thuật của Camera 1x iPhone -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm">
-          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-            <div class="text-slate-400 font-medium">Tiêu cự tương đương:</div>
-            <div class="text-xl font-bold text-sky-400">24mm - 26mm</div>
-            <p class="text-slate-400 text-xs">Góc nhìn ngang (HFOV) xấp xỉ ~ 73.7°</p>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-            <div class="text-slate-400 font-medium">Tiêu cự Pixel Khuyên Dùng:</div>
-            <div class="text-xl font-bold text-emerald-400">f = 820 px</div>
-            <p class="text-slate-400 text-xs">Được hiệu chuẩn cho khung hình 1280x720 (HD)</p>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-            <div class="text-slate-400 font-medium">Chiều rộng xe chuẩn (W):</div>
-            <div class="text-xl font-bold text-amber-400">1.8 mét</div>
-            <p class="text-slate-400 text-xs">Kích thước trung bình xe sedan/hatchback/CUV</p>
-          </div>
-        </div>
-
-        <!-- Bộ tinh chỉnh thông số trực tiếp -->
-        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
-          <h3 class="text-sm font-semibold text-sky-400">Tinh Chỉnh Tiêu Cự Camera iPhone của bạn:</h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Dòng iPhone đang dùng:</label>
-              <select id="iphoneModelSelect" onchange="applyIPhonePreset(this.value)" class="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-sky-500">
-                <option value="820">iPhone 13 / 14 / 15 / 16 (24mm - f=820px)</option>
-                <option value="780">iPhone 11 / 12 Series (26mm - f=780px)</option>
-                <option value="740">iPhone X / XS / XR / SE (28mm - f=740px)</option>
-                <option value="custom">Tùy chỉnh thủ công</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Tiêu cự f (Pixels):</label>
-              <div class="flex items-center gap-2">
-                <input type="number" id="focalLengthInput" value="820" class="w-full bg-slate-800 text-sky-400 font-mono font-bold border border-slate-700 rounded-lg p-2 text-xs" onchange="focalLength = parseFloat(this.value)">
-                <button onclick="saveCalibration()" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
-                  Lưu
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="text-xs text-slate-400 pt-2 border-t border-slate-800/80">
-            <strong>Mẹo gắn giá đỡ trên ô tô:</strong> Gắn iPhone ở chính giữa kính chắn gió ngay dưới gương chiếu hậu, hướng camera thẳng về phía trước để tầm nhìn đối xứng và đo chuẩn xác nhất.
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================= TAB 4: PYTHON SOURCE CODE ================= -->
-    <div id="view-guide" class="hidden space-y-4">
-      <div class="bg-adas-panel rounded-2xl p-4 sm:p-6 border border-adas-border space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-lg font-bold text-white">Mã Nguồn Python Đo Khoảng Cách (YOLOv8 + OpenCV)</h2>
-            <p class="text-xs text-slate-400">Dành cho Raspberry Pi 4 / NVIDIA Jetson Nano trên ô tô</p>
-          </div>
-          <button onclick="copyPythonCode()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-lg text-xs border border-slate-700 flex items-center gap-1.5">
-            <i class="fa-regular fa-copy"></i> Sao chép Code
-          </button>
-        </div>
-
-        <pre class="bg-slate-950 p-4 rounded-xl text-xs text-emerald-400 font-mono overflow-x-auto border border-slate-800 leading-relaxed max-h-[500px]">
-<code id="pythonSourceCode"># ====================================================================
-# SMART ADAS - PHẦN MỀM ĐO KHOẢNG CÁCH XE PHÍA TRƯỚC THEO TT 31/2019/TT-BGTVT
-# Tối ưu hóa cho Camera iPhone 1x / WebCam USB
-# ====================================================================
-
-import cv2
-import numpy as np
-from ultralytics import YOLO
-
-# 1. THÔNG SỐ HIỆU CHUẨN CAMERA IPHONE 1X
-FOCAL_LENGTH = 820.0       # Tiêu cự pixel (f) của iPhone 1x ở độ phân giải 1280x720
-REAL_CAR_WIDTH = 1.8       # Chiều rộng thực của xe ô tô con (mét)
-
-def get_required_safe_distance(speed_kmh, is_adverse_weather=False):
-    """
-    Quy định khoảng cách an toàn tối thiểu theo Thông tư 31/2019/TT-BGTVT
-    """
-    if speed_kmh <= 0:
-        base_dist = 5.0
-    elif speed_kmh < 60:
-        base_dist = 20.0    # Dưới 60km/h: Chủ động giữ khoảng cách phù hợp
-    elif speed_kmh <= 60:
-        base_dist = 35.0    # V = 60 km/h: 35m
-    elif speed_kmh <= 80:
-        base_dist = 55.0    # 60 < V <= 80 km/h: 55m
-    elif speed_kmh <= 100:
-        base_dist = 70.0    # 80 < V <= 100 km/h: 70m
-    else:
-        base_dist = 100.0   # 100 < V <= 120 km/h: 100m
-        
-    if is_adverse_weather:
-        base_dist *= 1.3    # Điều kiện bất lợi: Tăng thêm 30%
-        
-    return base_dist
-
-# 2. KHỞI TẠO MÔ HÌNH AI YOLOV8
-model = YOLO('yolov8n.pt')  # Mô hình nhẹ Nano tốc độ cao
-cap = cv2.VideoCapture(0)   # Camera ID
-
-current_speed_kmh = 75.0    # Tốc độ xe (kết nối GPS thực tế hoặc OBD2)
-is_bad_weather = False      # Chế độ thời tiết
-
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-        
-    h, w, _ = frame.shape
-    results = model(frame, verbose=False)
-    
-    min_safe_dist = get_required_safe_distance(current_speed_kmh, is_bad_weather)
-    
-    for r in results:
-        boxes = r.boxes
-        for box in boxes:
-            cls_id = int(box.cls[0])
-            label = model.names[cls_id]
-            
-            # Chỉ phát hiện phương tiện giao thông (car, truck, bus)
-            if label in ['car', 'truck', 'bus']:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                bbox_width = x2 - x1
-                
-                # Thuật toán Pinhole Camera Model: D = (f * W) / w
-                distance = (FOCAL_LENGTH * REAL_CAR_WIDTH) / bbox_width
-                
-                # Xác định trạng thái cảnh báo theo quy chuẩn
-                if distance < (min_safe_dist * 0.5) or distance < 8.0:
-                    color = (0, 0, 255)       # Đỏ: Nguy hiểm va chạm
-                    status = "NGUY HIEM VA CHAM!"
-                elif distance < min_safe_dist:
-                    color = (0, 165, 255)     # Cam/Vàng: Vi phạm khoảng cách
-                    status = "CANH BAO: QUA GAN"
-                else:
-                    color = (0, 255, 0)       # Xanh: An toàn
-                    status = "AN TOAN"
-                
-                # Vẽ khung & thông số
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f"{label.upper()} - {distance:.1f}m ({status})", 
-                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-                            
-    # Hiển thị HUD trên màn hình
-    cv2.putText(frame, f"Speed: {current_speed_kmh} km/h | Min Safe: {min_safe_dist:.0f}m", 
-                (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-                
-    cv2.imshow("Smart ADAS Vietnam - Camera iPhone 1x", frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
-</code></pre>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- ================= TOAST NOTIFICATION BOX ================= -->
-  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
-    <div class="px-4 py-3 rounded-xl bg-slate-900 border border-sky-500/50 text-sky-200 text-xs shadow-2xl flex items-center gap-2">
-      <i id="toastIcon" class="fa-solid fa-circle-check text-sky-400"></i>
-      <span id="toastMsg">Thông báo</span>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">CAR AUTO <span>AI ADAS</span> <span class="badge">PROTOTYPE</span></div>
+    <div class="controls">
+      <button id="cameraBtn">📷 Mở camera</button>
+      <label class="fileLabel">🎞️ Mở video<input id="fileInput" type="file" accept="video/*"></label>
+      <button id="gpsBtn">📍 GPS speed</button>
+      <button id="debugBtn">🛠 Debug</button>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT SYSTEM ENGINE ================= -->
-  <script>
-    // System Global States
-    let currentTab = 'hud';
-    let sourceMode = 'simulation'; // 'simulation', 'camera', 'sample_video'
-    let currentSpeed = 70; // km/h
-    let currentDistance = 65.0; // meters
-    let isBadWeather = false; // false = Nắng khô ráo, true = Mưa sương mù
-    let isAudioEnabled = true;
-    let isGPSActive = false;
-    let gpsWatchId = null;
-
-    // Optical Specs for iPhone 1x Main Camera
-    let focalLength = 820.0; // pixels for HD 720p (24mm - 26mm equivalent)
-    let realVehicleWidth = 1.8; // meters (average car width)
-
-    // Camera Video Stream Elements
-    let videoStream = null;
-    let currentFacingMode = 'environment'; // iPhone back camera
-    let cocoModel = null;
-    let isModelLoading = true;
-    let animationFrameId = null;
-    let detectedVehicles = []; // Store AI detected objects for HUD rendering
-
-    // Web Audio Engine for Collision Warning
-    let audioCtx = null;
-    let lastBeepTime = 0;
-
-    // DOM References
-    const canvas = document.getElementById('hudCanvas');
-    const ctx = canvas.getContext('2d');
-    const video = document.getElementById('webcamVideo');
-    const aiLoadingOverlay = document.getElementById('aiLoadingOverlay');
-
-    // ================= 1. SAFE DISTANCE CALCULATION (TT 31/2019) =================
-    function getRequiredSafeDistance(speed, isAdverse) {
-      let minDistance = 15;
-      let bracketName = "V < 60 km/h";
-
-      if (speed <= 0) {
-        minDistance = 5;
-        bracketName = "Đang dừng";
-      } else if (speed < 60) {
-        // Dưới 60km/h: Chủ động giữ khoảng cách (từ 15m - 30m)
-        minDistance = Math.max(15, Math.round(speed * 0.45));
-        bracketName = "V < 60 (Chủ động)";
-      } else if (speed === 60) {
-        minDistance = 35;
-        bracketName = "V = 60 km/h";
-      } else if (speed <= 80) {
-        minDistance = 55;
-        bracketName = "60 < V ≤ 80";
-      } else if (speed <= 100) {
-        minDistance = 70;
-        bracketName = "80 < V ≤ 100";
-      } else {
-        minDistance = 100;
-        bracketName = "100 < V ≤ 120";
-      }
-
-      if (isAdverse) {
-        // Điều kiện bất lợi: Tăng thêm 30%
-        minDistance = Math.round(minDistance * 1.3);
-      }
-
-      return { minDistance, bracketName };
-    }
-
-    // ================= 2. AUDIO WARNING SYSTEM =================
-    function initAudio() {
-      if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function playBeep(frequency, duration) {
-      if (!isAudioEnabled) return;
-      initAudio();
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {
-        console.warn("Audio warning failed:", e);
-      }
-    }
-
-    // ================= 3. RENDER LOOP & HUD DRAWING =================
-    function render() {
-      // Ensure canvas matches resolution
-      if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-      }
-
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      const { minDistance, bracketName } = getRequiredSafeDistance(currentSpeed, isBadWeather);
-
-      // Branch depending on mode
-      if (sourceMode === 'simulation') {
-        drawSimulationScene(w, h, minDistance);
-      } else {
-        // Camera or Sample Video mode: Draw video frame onto canvas
-        if (video.readyState >= 2) {
-          ctx.drawImage(video, 0, 0, w, h);
-          // Draw real-time AI vehicle bounding boxes on top of camera feed
-          drawCameraDetectedVehicleBoxes(w, h, minDistance);
-        }
-      }
-
-      // Draw ADAS HUD Overlay
-      drawAdasHudElements(w, h, minDistance, bracketName);
-
-      // Update Dashboard Metrics & Warnings
-      updateDashboardState(minDistance, bracketName);
-
-      animationFrameId = requestAnimationFrame(render);
-    }
-
-    // --- Draw AI Detected Vehicle Bounding Boxes on Camera / Video Feed ---
-    function drawCameraDetectedVehicleBoxes(w, h, minDistance) {
-      if (!video.videoWidth || !video.videoHeight || detectedVehicles.length === 0) return;
-
-      const scaleX = w / video.videoWidth;
-      const scaleY = h / video.videoHeight;
-
-      detectedVehicles.forEach((vehicle, idx) => {
-        const [vx, vy, vw, vh] = vehicle.bbox;
-        const boxX = vx * scaleX;
-        const boxY = vy * scaleY;
-        const boxW = vw * scaleX;
-        const boxH = vh * scaleY;
-        const dist = vehicle.distance;
-
-        // Determine warning level & box colors
-        let boxColor = '#22c55e'; // Green Safe
-        let statusBadge = 'AN TOÀN';
-        let glowClass = '';
-
-        if (dist < (minDistance * 0.5) || dist < 8.0) {
-          boxColor = '#ef4444'; // Red Danger
-          statusBadge = 'NGUY HIỂM!';
-        } else if (dist < minDistance) {
-          boxColor = '#f59e0b'; // Amber / Caution
-          statusBadge = 'CHÚ Ý CỰ LY';
-        }
-
-        ctx.save();
-
-        // 1. Draw Tech Corner Brackets for ADAS Aesthetic
-        const cornerLen = Math.min(24, boxW * 0.25, boxH * 0.25);
-        ctx.strokeStyle = boxColor;
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.shadowColor = boxColor;
-        ctx.shadowBlur = vehicle.isLead ? 12 : 6;
-
-        // Top-Left
-        ctx.beginPath();
-        ctx.moveTo(boxX, boxY + cornerLen);
-        ctx.lineTo(boxX, boxY);
-        ctx.lineTo(boxX + cornerLen, boxY);
-        ctx.stroke();
-
-        // Top-Right
-        ctx.beginPath();
-        ctx.moveTo(boxX + boxW - cornerLen, boxY);
-        ctx.lineTo(boxX + boxW, boxY);
-        ctx.lineTo(boxX + boxW, boxY + cornerLen);
-        ctx.stroke();
-
-        // Bottom-Left
-        ctx.beginPath();
-        ctx.moveTo(boxX, boxY + boxH - cornerLen);
-        ctx.lineTo(boxX, boxY + boxH);
-        ctx.lineTo(boxX + cornerLen, boxY + boxH);
-        ctx.stroke();
-
-        // Bottom-Right
-        ctx.beginPath();
-        ctx.moveTo(boxX + boxW - cornerLen, boxY + boxH);
-        ctx.lineTo(boxX + boxW, boxY + boxH);
-        ctx.lineTo(boxX + boxW, boxY + boxH - cornerLen);
-        ctx.stroke();
-
-        // Translucent fill
-        ctx.fillStyle = vehicle.isLead ? 'rgba(56, 189, 248, 0.08)' : 'rgba(0, 0, 0, 0.12)';
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-
-        // 2. Distance & Tag HUD Header Banner
-        const tagText = `${vehicle.label.toUpperCase()}: ${dist.toFixed(1)}m [${statusBadge}]`;
-        ctx.font = 'bold 12px monospace';
-        const textWidth = ctx.measureText(tagText).width;
-        const tagH = 22;
-        const tagY = Math.max(tagH + 4, boxY - 6);
-
-        // Header background capsule
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(10, 15, 29, 0.9)';
-        ctx.beginPath();
-        ctx.roundRect(boxX, tagY - tagH, Math.max(boxW, textWidth + 16), tagH, [4, 4, 0, 0]);
-        ctx.fill();
-
-        // Header border top line
-        ctx.fillStyle = boxColor;
-        ctx.fillRect(boxX, tagY - tagH, Math.max(boxW, textWidth + 16), 2);
-
-        // Tag text
-        ctx.fillStyle = boxColor;
-        ctx.textAlign = 'left';
-        ctx.fillText(tagText, boxX + 8, tagY - 6);
-
-        // If this is the nearest/lead vehicle, draw center target indicator
-        if (vehicle.isLead) {
-          const centerX = boxX + boxW / 2;
-          const centerY = boxY + boxH / 2;
-          ctx.strokeStyle = boxColor;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-          ctx.moveTo(centerX - 12, centerY);
-          ctx.lineTo(centerX + 12, centerY);
-          ctx.moveTo(centerX, centerY - 12);
-          ctx.lineTo(centerX, centerY + 12);
-          ctx.stroke();
-        }
-
-        ctx.restore();
-      });
-    }
-
-    // --- Draw Simulation 3D Highway Road Scene ---
-    let roadStripeOffset = 0;
-    function drawSimulationScene(w, h, minDistance) {
-      roadStripeOffset = (roadStripeOffset + (currentSpeed * 0.08)) % 40;
-
-      // Sky gradient
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-      if (isBadWeather) {
-        skyGrad.addColorStop(0, '#1e293b');
-        skyGrad.addColorStop(1, '#334155');
-      } else {
-        skyGrad.addColorStop(0, '#0284c7');
-        skyGrad.addColorStop(1, '#38bdf8');
-      }
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, w, h * 0.5);
-
-      // Road Surface (Trapezoid Perspective)
-      ctx.fillStyle = isBadWeather ? '#111827' : '#1e293b';
-      ctx.beginPath();
-      ctx.moveTo(w * 0.42, h * 0.48);
-      ctx.lineTo(w * 0.58, h * 0.48);
-      ctx.lineTo(w * 0.95, h);
-      ctx.lineTo(w * 0.05, h);
-      ctx.closePath();
-      ctx.fill();
-
-      // Road borders & Dashed Center Lines
-      ctx.strokeStyle = '#facc15';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([25, 20]);
-      ctx.lineDashOffset = -roadStripeOffset;
-      ctx.beginPath();
-      ctx.moveTo(w * 0.5, h * 0.48);
-      ctx.lineTo(w * 0.5, h);
-      ctx.stroke();
-      ctx.setLineDash([]); // Reset dash
-
-      // Draw Simulated Lead Car
-      // Scale car size inversely with distance (Pinhole model: w_px = (f * W) / D)
-      const distClamped = Math.max(5, currentDistance);
-      const simulatedCarWidthPx = Math.min(w * 0.7, (focalLength * realVehicleWidth) / distClamped * (w / 1280));
-      const simulatedCarHeightPx = simulatedCarWidthPx * 0.75;
-      
-      // Calculate Car Y on road based on distance
-      const horizonY = h * 0.48;
-      const bottomY = h * 0.88;
-      const t = Math.min(1, Math.max(0, 1 - (distClamped / 120)));
-      const carCenterY = horizonY + (bottomY - horizonY) * Math.pow(t, 1.4);
-      const carCenterX = w * 0.5;
-
-      const carX = carCenterX - simulatedCarWidthPx / 2;
-      const carY = carCenterY - simulatedCarHeightPx;
-
-      // Draw 3D Car Vector
-      drawCarVector(carX, carY, simulatedCarWidthPx, simulatedCarHeightPx);
-
-      // Draw AI Bounding Box & Distance Tag
-      let boxColor = '#22c55e'; // Green
-      if (currentDistance < (minDistance * 0.5) || currentDistance < 8) {
-        boxColor = '#ef4444'; // Red Danger
-      } else if (currentDistance < minDistance) {
-        boxColor = '#f97316'; // Orange / Yellow Warning
-      }
-
-      ctx.strokeStyle = boxColor;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(carX, carY, simulatedCarWidthPx, simulatedCarHeightPx);
-
-      // Distance Tag on top of car
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(carX, carY - 26, simulatedCarWidthPx, 22);
-      ctx.fillStyle = boxColor;
-      ctx.font = 'bold 12px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Ô TÔ: ${currentDistance.toFixed(1)}m`, carCenterX, carY - 10);
-    }
-
-    // Helper: Draw stylized Car Back
-    function drawCarVector(x, y, w, h) {
-      ctx.save();
-      // Body
-      ctx.fillStyle = '#3b82f6';
-      ctx.beginPath();
-      ctx.roundRect(x, y + h * 0.35, w, h * 0.65, 8);
-      ctx.fill();
-
-      // Cabin / Roof
-      ctx.fillStyle = '#1e3a8a';
-      ctx.beginPath();
-      ctx.roundRect(x + w * 0.15, y, w * 0.7, h * 0.5, 6);
-      ctx.fill();
-
-      // Rear Windshield
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(x + w * 0.2, y + h * 0.08, w * 0.6, h * 0.3);
-
-      // Tail lights
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(x + w * 0.05, y + h * 0.45, w * 0.2, h * 0.15);
-      ctx.fillRect(x + w * 0.75, y + h * 0.45, w * 0.2, h * 0.15);
-
-      // License Plate
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + w * 0.35, y + h * 0.7, w * 0.3, h * 0.15);
-      ctx.fillStyle = '#000000';
-      ctx.font = `bold ${Math.max(8, h * 0.1)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('30H-999.88', x + w * 0.5, y + h * 0.81);
-      ctx.restore();
-    }
-
-    // --- Draw ADAS Cockpit HUD Elements ---
-    function drawAdasHudElements(w, h, minDistance, bracketName) {
-      ctx.save();
-      
-      // Center Crosshair
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(w * 0.5 - 20, h * 0.5);
-      ctx.lineTo(w * 0.5 + 20, h * 0.5);
-      ctx.moveTo(w * 0.5, h * 0.5 - 20);
-      ctx.lineTo(w * 0.5, h * 0.5 + 20);
-      ctx.stroke();
-
-      // Speed & Safe Distance Banner at Top Center
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.roundRect(w * 0.5 - 120, 10, 240, 36, 10);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-      ctx.stroke();
-
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`V: ${currentSpeed} km/h | Tối thiểu: ${minDistance}m`, w * 0.5, 32);
-
-      ctx.restore();
-    }
-
-    // --- Update Dashboard Status, Colors & Beeps ---
-    function updateDashboardState(minDistance, bracketName) {
-      document.getElementById('metricDistance').innerText = currentDistance.toFixed(1);
-      document.getElementById('metricSpeed').innerText = currentSpeed;
-      document.getElementById('metricMinSafe').innerText = minDistance;
-      document.getElementById('metricBracket').innerText = bracketName;
-
-      const warningBanner = document.getElementById('warningBanner');
-      const warningDot = document.getElementById('warningDot');
-      const warningText = document.getElementById('warningText');
-      const deltaText = document.getElementById('distanceDeltaText');
-
-      // Highlight Top Rule Badges
-      highlightActiveRuleBadge(currentSpeed);
-
-      // Warning Logic
-      const now = Date.now();
-      const isCritical = currentDistance < (minDistance * 0.5) || currentDistance < 8.0;
-      const isTooClose = currentDistance < minDistance;
-
-      if (isCritical) {
-        // RED DANGER
-        warningBanner.className = 'p-3 bg-rose-950/90 border-t border-rose-500 text-rose-200 flex items-center justify-between glow-danger';
-        warningDot.className = 'w-3.5 h-3.5 rounded-full bg-rose-500 animate-ping';
-        warningText.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> NGUY CẤP: NGUY CƠ VA CHẠM!';
-        deltaText.innerText = `D = ${currentDistance.toFixed(1)}m (Thiếu ${(minDistance - currentDistance).toFixed(1)}m!)`;
-
-        // Urgent Beep (Every 250ms)
-        if (now - lastBeepTime > 250) {
-          playBeep(980, 0.12);
-          lastBeepTime = now;
-        }
-      } else if (isTooClose) {
-        // YELLOW / ORANGE WARNING
-        warningBanner.className = 'p-3 bg-amber-950/90 border-t border-amber-500 text-amber-200 flex items-center justify-between glow-caution';
-        warningDot.className = 'w-3.5 h-3.5 rounded-full bg-amber-400';
-        warningText.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> CẢNH BÁO: CHƯA ĐỦ KHOẢNG CÁCH AN TOÀN';
-        deltaText.innerText = `D = ${currentDistance.toFixed(1)}m (Yêu cầu: ≥ ${minDistance}m)`;
-
-        // Caution Beep (Every 800ms)
-        if (now - lastBeepTime > 800) {
-          playBeep(650, 0.15);
-          lastBeepTime = now;
-        }
-      } else {
-        // GREEN SAFE
-        warningBanner.className = 'p-3 bg-emerald-950/80 border-t border-emerald-500/40 text-emerald-300 flex items-center justify-between';
-        warningDot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500';
-        warningText.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> TRẠNG THÁI: KHOẢNG CÁCH AN TOÀN';
-        deltaText.innerText = `D = ${currentDistance.toFixed(1)}m (Tối thiểu: ${minDistance}m)`;
-      }
-    }
-
-    function highlightActiveRuleBadge(speed) {
-      ['badge-rule-60', 'badge-rule-80', 'badge-rule-100', 'badge-rule-120'].forEach(id => {
-        document.getElementById(id).classList.remove('ring-2', 'ring-sky-400', 'bg-slate-800');
-      });
-
-      if (speed <= 60) {
-        document.getElementById('badge-rule-60').classList.add('ring-2', 'ring-emerald-400', 'bg-slate-800');
-      } else if (speed <= 80) {
-        document.getElementById('badge-rule-80').classList.add('ring-2', 'ring-yellow-400', 'bg-slate-800');
-      } else if (speed <= 100) {
-        document.getElementById('badge-rule-100').classList.add('ring-2', 'ring-orange-400', 'bg-slate-800');
-      } else {
-        document.getElementById('badge-rule-120').classList.add('ring-2', 'ring-rose-400', 'bg-slate-800');
-      }
-    }
-
-    // ================= 4. TENSORFLOW AI OBJECT DETECTION =================
-    async function initTensorFlowModel() {
-      try {
-        cocoModel = await cocoSsd.load();
-        isModelLoading = false;
-        aiLoadingOverlay.classList.add('opacity-0');
-        setTimeout(() => aiLoadingOverlay.classList.add('hidden'), 300);
-        showToast("Mô hình AI nhận diện xe đã sẵn sàng!");
-        
-        // Start continuous object detection loop
-        runAIDetectionLoop();
-      } catch (err) {
-        console.error("TensorFlow Load Error:", err);
-        isModelLoading = false;
-        aiLoadingOverlay.innerHTML = `
-          <div class="text-rose-400 text-center p-4">
-            <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
-            <p class="font-bold">Không thể tải mô hình AI</p>
-            <p class="text-xs text-slate-400 mt-1">Đang dùng chế độ Mô phỏng thay thế.</p>
-          </div>
-        `;
-      }
-    }
-
-    async function runAIDetectionLoop() {
-      if (sourceMode !== 'simulation' && video.readyState >= 2 && cocoModel) {
-        try {
-          const predictions = await cocoModel.detect(video);
-          
-          // Filter for vehicles: car, truck, bus, motorcycle
-          const vehicles = predictions.filter(p => ['car', 'truck', 'bus', 'motorcycle'].includes(p.class));
-          
-          if (vehicles.length > 0) {
-            // Sort by bounding box area (largest = closest vehicle)
-            vehicles.sort((a, b) => (b.bbox[2] * b.bbox[3]) - (a.bbox[2] * a.bbox[3]));
-
-            // Map detections with calculated pinhole distance and vehicle class dimensions
-            detectedVehicles = vehicles.map((v, idx) => {
-              const bboxWidth = v.bbox[2];
-              let targetWidth = realVehicleWidth;
-              let labelVi = 'Ô tô';
-
-              if (v.class === 'truck') {
-                targetWidth = 2.4;
-                labelVi = 'Xe tải';
-              } else if (v.class === 'bus') {
-                targetWidth = 2.6;
-                labelVi = 'Xe bus';
-              } else if (v.class === 'motorcycle') {
-                targetWidth = 0.8;
-                labelVi = 'Xe máy';
-              }
-
-              // Standard Pinhole Camera Model: D = (f * W) / bboxWidth
-              // Normalized to 1280 width ratio if video dimensions differ
-              const normalizedFocal = focalLength * (video.videoWidth ? (video.videoWidth / 1280) : 1);
-              const estDist = (normalizedFocal * targetWidth) / Math.max(1, bboxWidth);
-              const clampedDist = Math.min(150, Math.max(1.5, estDist));
-
-              return {
-                bbox: v.bbox,
-                score: v.score,
-                label: labelVi,
-                distance: clampedDist,
-                isLead: idx === 0 // Lead front vehicle
-              };
-            });
-
-            // Update main cockpit distance to the lead vehicle
-            currentDistance = detectedVehicles[0].distance;
-          } else {
-            detectedVehicles = [];
-          }
-        } catch (e) {
-          console.warn("AI detect error:", e);
-        }
-      } else if (sourceMode === 'simulation') {
-        detectedVehicles = [];
-      }
-      setTimeout(runAIDetectionLoop, 100); // 10 FPS detection
-    }
-
-    // ================= 5. CAMERA & VIDEO SOURCES =================
-    async function startCamera() {
-      stopCurrentStream();
-      document.getElementById('btnSwitchCam').classList.remove('hidden');
-      document.getElementById('simDistControlGroup').classList.add('opacity-40', 'pointer-events-none');
-
-      try {
-        const constraints = {
-          video: {
-            facingMode: { ideal: currentFacingMode },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false
-        };
-
-        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = videoStream;
-        video.play();
-        showToast("Đã kết nối Camera iPhone 1x trực tiếp");
-      } catch (err) {
-        console.error("Camera Error:", err);
-        showToast("Không thể mở Camera. Đang chuyển sang Video mẫu.");
-        changeSourceMode('sample_video');
-      }
-    }
-
-    function switchCameraFacing() {
-      currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
-      startCamera();
-    }
-
-    function handleFileVideo(input) {
-      if (input.files && input.files[0]) {
-        stopCurrentStream();
-        const file = input.files[0];
-        const videoUrl = URL.createObjectURL(file);
-        video.srcObject = null;
-        video.src = videoUrl;
-        video.loop = true;
-        video.play();
-        updateSourceButtonsUI('sample_video');
-        sourceMode = 'camera';
-        document.getElementById('simDistControlGroup').classList.add('opacity-40', 'pointer-events-none');
-        showToast("Đã tải clip ô tô - AI đang quét phát hiện xe");
-      }
-    }
-
-    function loadSampleVideo() {
-      stopCurrentStream();
-      document.getElementById('btnSwitchCam').classList.add('hidden');
-      document.getElementById('simDistControlGroup').classList.add('opacity-40', 'pointer-events-none');
-      // Synthetic traffic clip source (creative commons highway footage)
-      video.srcObject = null;
-      video.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-      video.loop = true;
-      video.play();
-      showToast("Đang phát video đường cao tốc mẫu");
-    }
-
-    function stopCurrentStream() {
-      if (videoStream) {
-        videoStream.getTracks().forEach(t => t.stop());
-        videoStream = null;
-      }
-      video.pause();
-    }
-
-    function updateSourceButtonsUI(mode) {
-      const modes = ['simulation', 'camera', 'sample_video'];
-      modes.forEach(m => {
-        const btn = document.getElementById(`srcBtn-${m}`);
-        if (!btn) return;
-        if (m === mode) {
-          btn.className = 'px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all bg-sky-500/20 text-sky-300 border border-sky-500/60 shadow-sm ring-1 ring-sky-400';
-        } else {
-          btn.className = 'px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700';
-        }
-      });
-    }
-
-    function changeSourceMode(mode) {
-      sourceMode = mode;
-      updateSourceButtonsUI(mode);
-
-      if (mode === 'simulation') {
-        stopCurrentStream();
-        document.getElementById('btnSwitchCam').classList.add('hidden');
-        document.getElementById('simDistControlGroup').classList.remove('opacity-40', 'pointer-events-none');
-        showToast("Chuyển sang chế độ Mô Phỏng 3D");
-      } else if (mode === 'camera') {
-        startCamera();
-      } else if (mode === 'sample_video') {
-        loadSampleVideo();
-      }
-    }
-
-    // ================= 6. WEATHER, GPS & CONTROLS =================
-    function toggleWeatherCondition() {
-      isBadWeather = !isBadWeather;
-      const btn = document.getElementById('btnWeatherToggle');
-      const icon = document.getElementById('weatherIcon');
-      const txt = document.getElementById('weatherText');
-      const badge = document.getElementById('weatherHudBadge');
-
-      if (isBadWeather) {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border border-sky-500/60 bg-sky-500/20 text-sky-300 flex items-center gap-1.5 transition';
-        icon.className = 'fa-solid fa-cloud-rain text-sky-400';
-        txt.innerText = 'Mưa / Trơn trượt';
-        badge.className = 'absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-sky-500/50 text-sky-300 text-xs flex items-center gap-1.5 font-mono';
-        badge.innerHTML = '<i class="fa-solid fa-cloud-rain text-sky-400"></i> Bất lợi: +30% khoảng cách';
-        showToast("Đã kích hoạt chế độ: Mưa & Trơn trượt (+30% KC an toàn)");
-      } else {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-1.5 transition';
-        icon.className = 'fa-solid fa-sun text-amber-400';
-        txt.innerText = 'Khô ráo';
-        badge.className = 'absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-amber-500/50 text-amber-300 text-xs flex items-center gap-1.5 font-mono';
-        badge.innerHTML = '<i class="fa-solid fa-sun text-amber-400"></i> Khô ráo: Chuẩn 100%';
-        showToast("Đã chuyển về chế độ: Khô ráo, tầm nhìn tốt");
-      }
-    }
-
-    function toggleGPS() {
-      if (isGPSActive) {
-        // Stop GPS
-        if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-        isGPSActive = false;
-        document.getElementById('gpsStatusText').innerText = 'Bật GPS';
-        document.getElementById('btnGpsToggle').classList.remove('bg-sky-600', 'text-white');
-        showToast("Đã tắt định vị GPS");
-      } else {
-        // Start GPS
-        if ('geolocation' in navigator) {
-          gpsWatchId = navigator.geolocation.watchPosition(
-            (pos) => {
-              isGPSActive = true;
-              document.getElementById('gpsStatusText').innerText = 'GPS Đang Bật';
-              document.getElementById('btnGpsToggle').classList.add('bg-sky-600', 'text-white');
-              if (pos.coords.speed !== null && pos.coords.speed >= 0) {
-                // convert m/s to km/h
-                currentSpeed = Math.round(pos.coords.speed * 3.6);
-                document.getElementById('simSpeedRange').value = currentSpeed;
-                document.getElementById('sliderSpeedVal').innerText = `${currentSpeed} km/h`;
-              }
-            },
-            (err) => {
-              showToast("Không lấy được GPS. Sử dụng thanh trượt tốc độ.");
-              isGPSActive = false;
-            },
-            { enableHighAccuracy: true }
-          );
-        } else {
-          showToast("Thiết bị không hỗ trợ GPS.");
-        }
-      }
-    }
-
-    function toggleAudio() {
-      isAudioEnabled = !isAudioEnabled;
-      const icon = document.getElementById('audioIcon');
-      if (isAudioEnabled) {
-        icon.className = 'fa-solid fa-volume-high text-sky-400';
-        showToast("Đã bật âm thanh cảnh báo");
-      } else {
-        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
-        showToast("Đã tắt âm thanh");
-      }
-    }
-
-    function updateSimSpeed(val) {
-      currentSpeed = parseInt(val);
-      document.getElementById('sliderSpeedVal').innerText = `${currentSpeed} km/h`;
-    }
-
-    function updateSimDistance(val) {
-      currentDistance = parseFloat(val);
-      document.getElementById('sliderDistVal').innerText = `${currentDistance} mét`;
-    }
-
-    function setScenario(speed, distance) {
-      currentSpeed = speed;
-      currentDistance = distance;
-      document.getElementById('simSpeedRange').value = speed;
-      document.getElementById('simDistRange').value = distance;
-      document.getElementById('sliderSpeedVal').innerText = `${speed} km/h`;
-      document.getElementById('sliderDistVal').innerText = `${distance} mét`;
-      showToast(`Đã nạp kịch bản: ${speed} km/h - ${distance}m`);
-    }
-
-    // ================= 7. IPHONE CALIBRATION =================
-    function applyIPhonePreset(val) {
-      if (val !== 'custom') {
-        focalLength = parseFloat(val);
-        document.getElementById('focalLengthInput').value = focalLength;
-        showToast(`Đã thiết lập tiêu cự iPhone: f=${focalLength}px`);
-      }
-    }
-
-    function saveCalibration() {
-      focalLength = parseFloat(document.getElementById('focalLengthInput').value);
-      showToast(`Đã lưu tiêu cự camera iPhone: ${focalLength}px`);
-    }
-
-    // ================= 8. NAVIGATION & UTILITIES =================
-    function switchTab(tabId) {
-      currentTab = tabId;
-      ['hud', 'rules', 'iphone', 'guide'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).className = 'py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition';
-      });
-
-      document.getElementById(`view-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).className = 'py-2.5 px-3 border-b-2 border-sky-400 text-sky-400 flex items-center gap-2 whitespace-nowrap transition';
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById('toastNotification');
-      document.getElementById('toastMsg').innerText = msg;
-      toast.classList.remove('translate-y-24', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-24', 'opacity-0');
-      }, 3000);
-    }
-
-    function copyPythonCode() {
-      const code = document.getElementById('pythonSourceCode').innerText;
-      const el = document.createElement('textarea');
-      el.value = code;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      showToast("Đã sao chép mã nguồn Python!");
-    }
-
-    // Start Everything on Load
-    window.addEventListener('load', () => {
-      initTensorFlowModel();
-      render();
+  <div class="stage" id="stage">
+    <video id="video" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="hudTop">
+      <div class="pill"><b id="speedHud">0</b> km/h</div>
+      <div class="pill">AI: <b id="aiState">LOADING</b></div>
+      <div class="pill">FPS: <b id="fpsHud">0</b></div>
+    </div>
+    <div class="warning" id="warning"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>ADAS WORLD STATE</h3>
+      <div class="metrics">
+        <div class="metric"><b id="laneConf">0%</b><small>Lane confidence</small></div>
+        <div class="metric"><b id="objectCount">0</b><small>Objects</small></div>
+        <div class="metric"><b id="leadDistance">—</b><small>Lead distance EST.</small></div>
+        <div class="metric"><b id="ttc">—</b><small>TTC EST.</small></div>
+      </div>
+      <div class="row"><span class="badge">Lane Detection</span><span class="badge">Object Detection</span><span class="badge">Tracking</span><span class="badge">Distance EST.</span><span class="badge">Fusion</span></div>
+      <div id="debugLog" class="log"></div>
+    </div>
+
+    <div class="panel">
+      <h3>CALIBRATION / TUNING</h3>
+      <div class="row"><label>Tốc độ thủ công</label><input id="speed" type="range" min="0" max="160" value="0"><span id="speedVal">0 km/h</span></div>
+      <div class="row"><label>Camera FOV ngang</label><input id="fov" type="range" min="45" max="120" value="75"><span id="fovVal">75°</span></div>
+      <div class="row"><label>Camera cao</label><input id="camHeight" type="range" min="80" max="220" value="135"><span id="camHeightVal">1.35 m</span></div>
+      <div class="row"><label>Lane sensitivity</label><input id="laneSensitivity" type="range" min="20" max="100" value="55"><span id="laneSensVal">55</span></div>
+      <div class="row"><label>AI detect mỗi</label><input id="detectEvery" type="range" min="1" max="12" value="4"><span id="detectEveryVal">4 frame</span></div>
+      <div class="row"><label>Model</label><span class="badge">TensorFlow.js COCO-SSD</span></div>
+      <div class="row"><label>Distance</label><span class="badge warn">MONOCULAR ESTIMATE — cần calibration để dùng nghiêm túc</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Hệ thống hỗ trợ nghiên cứu/hiển thị ADAS. Không dùng làm căn cứ duy nhất để điều khiển xe thật. Khoảng cách/TTC từ một camera chỉ là ước tính.
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+'use strict';
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('overlay');
+const ctx = canvas.getContext('2d', { alpha:true });
+const warningEl = document.getElementById('warning');
+const debugLog = document.getElementById('debugLog');
+const aiState = document.getElementById('aiState');
+
+let model = null, debug = false, running = false, frame = 0;
+let lastTs = performance.now(), fpsEMA = 0, inferenceMs = 0;
+let detections = [], tracks = [], nextTrackId = 1;
+let laneSmoothed = {left:null,right:null,conf:0};
+let gpsWatchId = null;
+const history = new Map();
+
+const allowedClasses = new Set(['car','truck','bus','motorcycle','bicycle','person']);
+const realHeight = {person:1.70, bicycle:1.25, motorcycle:1.35, car:1.50, truck:3.2, bus:3.2};
+
+const $ = id => document.getElementById(id);
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+function resizeCanvas(){
+  const r = canvas.getBoundingClientRect();
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = Math.round(r.width*dpr);
+  canvas.height = Math.round(r.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resizeCanvas);
+
+async function loadAI(){
+  try{
+    aiState.textContent = 'LOADING';
+    model = await cocoSsd.load({base:'lite_mobilenet_v2'});
+    aiState.textContent = 'READY';
+    aiState.className = 'ok';
+  }catch(e){
+    aiState.textContent = 'ERROR';
+    aiState.className = 'danger';
+    log('AI load error: '+e.message);
+  }
+}
+loadAI();
+
+$('cameraBtn').onclick = async ()=>{
+  try{
+    if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}},
+      audio:false
     });
-  </script>
+    video.srcObject = stream; video.src = '';
+    await video.play(); start();
+  }catch(e){ alert('Không mở được camera: '+e.message); }
+};
+
+$('fileInput').onchange = async e=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
+  video.srcObject = null; video.src = URL.createObjectURL(f);
+  video.loop = true; await video.play(); start();
+};
+
+$('debugBtn').onclick = ()=>{ debug=!debug; $('debugBtn').textContent = debug?'🛠 Debug ON':'🛠 Debug'; };
+$('gpsBtn').onclick = ()=>{
+  if(!navigator.geolocation){ alert('Trình duyệt không hỗ trợ GPS'); return; }
+  if(gpsWatchId !== null){ navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId=null; $('gpsBtn').textContent='📍 GPS speed'; return; }
+  gpsWatchId = navigator.geolocation.watchPosition(p=>{
+    if(Number.isFinite(p.coords.speed) && p.coords.speed >= 0){
+      const kmh = p.coords.speed*3.6;
+      $('speed').value = clamp(kmh,0,160); updateControls();
+    }
+  }, e=>log('GPS: '+e.message), {enableHighAccuracy:true, maximumAge:500});
+  $('gpsBtn').textContent='📍 GPS ON';
+};
+
+['speed','fov','camHeight','laneSensitivity','detectEvery'].forEach(id=>$(id).oninput=updateControls);
+function updateControls(){
+  $('speedVal').textContent = `${Math.round(+$('speed').value)} km/h`;
+  $('speedHud').textContent = Math.round(+$('speed').value);
+  $('fovVal').textContent = `${$('fov').value}°`;
+  $('camHeightVal').textContent = `${(+$('camHeight').value/100).toFixed(2)} m`;
+  $('laneSensVal').textContent = $('laneSensitivity').value;
+  $('detectEveryVal').textContent = `${$('detectEvery').value} frame`;
+}
+updateControls();
+
+function start(){
+  if(running) return;
+  running = true; resizeCanvas();
+  requestAnimationFrame(loop);
+}
+
+async function loop(ts){
+  if(!running) return;
+  const dt = Math.max(1, ts-lastTs); lastTs=ts;
+  const fps=1000/dt; fpsEMA = fpsEMA?lerp(fpsEMA,fps,.08):fps;
+  $('fpsHud').textContent = fpsEMA.toFixed(0);
+
+  if(video.readyState >= 2){
+    frame++;
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    ctx.clearRect(0,0,W,H);
+
+    const lane = detectLanes(video, W, H);
+    drawLanes(lane,W,H);
+
+    if(model && frame % (+$('detectEvery').value) === 0){
+      const t0=performance.now();
+      try{
+        const raw = await model.detect(video, 30, 0.35);
+        detections = raw.filter(x=>allowedClasses.has(x.class));
+        inferenceMs = performance.now()-t0;
+        tracks = updateTracks(detections, tracks);
+      }catch(e){ log('Inference: '+e.message); }
+    }else{
+      ageTracks(tracks);
+    }
+
+    const world = fuseWorld(tracks, lane, W, H, dt/1000);
+    drawObjects(world.objects,W,H);
+    drawCorridor(lane,W,H);
+    updateHUD(world);
+    drawDebug(world,lane,W,H);
+  }
+  requestAnimationFrame(loop);
+}
+
+function sampleFrame(video, sw=320, sh=180){
+  const off = sampleFrame.canvas || (sampleFrame.canvas=document.createElement('canvas'));
+  off.width=sw; off.height=sh;
+  const c=off.getContext('2d',{willReadFrequently:true});
+  c.drawImage(video,0,0,sw,sh);
+  return {img:c.getImageData(0,0,sw,sh), sw,sh};
+}
+
+function detectLanes(video,W,H){
+  try{
+    const {img,sw,sh}=sampleFrame(video);
+    const d=img.data, sens=+$('laneSensitivity').value;
+    const y0=Math.floor(sh*.53), y1=Math.floor(sh*.96);
+    let lp=[], rp=[];
+    for(let y=y0; y<y1; y+=3){
+      const t=(y-y0)/(y1-y0);
+      const cx=sw*.5;
+      const leftMin=Math.floor(lerp(sw*.18, sw*.04,t));
+      const leftMax=Math.floor(lerp(sw*.47, sw*.45,t));
+      const rightMin=Math.floor(lerp(sw*.53, sw*.55,t));
+      const rightMax=Math.floor(lerp(sw*.82, sw*.96,t));
+      let bestL=null,bestLS=0,bestR=null,bestRS=0;
+      for(let x=leftMin+2;x<leftMax-2;x+=2){
+        const s=edgeScore(d,sw,x,y); if(s>bestLS){bestLS=s;bestL=x;}
+      }
+      for(let x=rightMin+2;x<rightMax-2;x+=2){
+        const s=edgeScore(d,sw,x,y); if(s>bestRS){bestRS=s;bestR=x;}
+      }
+      const th=35+(100-sens)*.7;
+      if(bestLS>th) lp.push([bestL,y,bestLS]);
+      if(bestRS>th) rp.push([bestR,y,bestRS]);
+    }
+    const lf=fitLine(lp), rf=fitLine(rp);
+    let conf=clamp((lp.length+rp.length)/35,0,1);
+    if(!lf || !rf) conf*=.55;
+    const left=lf?scaleLine(lf,sw,sh,W,H):null;
+    const right=rf?scaleLine(rf,sw,sh,W,H):null;
+
+    laneSmoothed.left = smoothLine(laneSmoothed.left,left,.18);
+    laneSmoothed.right = smoothLine(laneSmoothed.right,right,.18);
+    laneSmoothed.conf = lerp(laneSmoothed.conf,conf,.15);
+    return {...laneSmoothed};
+  }catch(e){ return {left:null,right:null,conf:0}; }
+}
+
+function lum(d,i){return .2126*d[i]+.7152*d[i+1]+.0722*d[i+2]}
+function edgeScore(d,w,x,y){
+  const i=(y*w+x)*4, il=(y*w+x-2)*4, ir=(y*w+x+2)*4, iu=((y-2)*w+x)*4;
+  const gx=Math.abs(lum(d,ir)-lum(d,il)), gy=Math.abs(lum(d,i)-lum(d,iu));
+  const brightness=lum(d,i);
+  return gx*.75+gy*.25+Math.max(0,brightness-150)*.20;
+}
+function fitLine(points){
+  if(points.length<4)return null;
+  let sx=0,sy=0,sxy=0,syy=0,n=points.length;
+  for(const [x,y] of points){sx+=x;sy+=y;sxy+=x*y;syy+=y*y}
+  const den=n*syy-sy*sy;if(Math.abs(den)<1e-6)return null;
+  const a=(n*sxy-sy*sx)/den, b=(sx-a*sy)/n;
+  return {a,b,yTop:Math.min(...points.map(p=>p[1])),yBot:Math.max(...points.map(p=>p[1]))};
+}
+function scaleLine(l,sw,sh,W,H){
+  return {x1:(l.a*l.yTop+l.b)/sw*W,y1:l.yTop/sh*H,x2:(l.a*l.yBot+l.b)/sw*W,y2:l.yBot/sh*H};
+}
+function smoothLine(prev,next,t){
+  if(!next)return prev;
+  if(!prev)return next;
+  return {x1:lerp(prev.x1,next.x1,t),y1:lerp(prev.y1,next.y1,t),x2:lerp(prev.x2,next.x2,t),y2:lerp(prev.y2,next.y2,t)};
+}
+function xAtY(line,y){
+  if(!line)return null; const dy=line.y2-line.y1;if(Math.abs(dy)<1)return line.x2;
+  return line.x1+(line.x2-line.x1)*(y-line.y1)/dy;
+}
+
+function drawLanes(lane,W,H){
+  if(lane.conf<.12)return;
+  ctx.save();ctx.lineCap='round';ctx.lineWidth=6;ctx.shadowBlur=12;ctx.shadowColor='#53f2a2';ctx.strokeStyle='#53f2a2';
+  [lane.left,lane.right].forEach(l=>{if(!l)return;ctx.beginPath();ctx.moveTo(l.x1,l.y1);ctx.lineTo(l.x2,l.y2);ctx.stroke()});
+  ctx.restore();
+}
+function drawCorridor(lane,W,H){
+  if(!lane.left||!lane.right||lane.conf<.2)return;
+  const yTop=Math.max(lane.left.y1,lane.right.y1), yBot=Math.min(H*.98,Math.max(lane.left.y2,lane.right.y2));
+  const lx1=xAtY(lane.left,yTop), rx1=xAtY(lane.right,yTop), lx2=xAtY(lane.left,yBot), rx2=xAtY(lane.right,yBot);
+  if([lx1,rx1,lx2,rx2].some(v=>v==null))return;
+  ctx.save();ctx.fillStyle='rgba(32,220,130,.10)';ctx.beginPath();ctx.moveTo(lx1,yTop);ctx.lineTo(rx1,yTop);ctx.lineTo(rx2,yBot);ctx.lineTo(lx2,yBot);ctx.closePath();ctx.fill();ctx.restore();
+}
+
+function iou(a,b){
+  const ax1=a[0],ay1=a[1],ax2=ax1+a[2],ay2=ay1+a[3], bx1=b[0],by1=b[1],bx2=bx1+b[2],by2=by1+b[3];
+  const x1=Math.max(ax1,bx1),y1=Math.max(ay1,by1),x2=Math.min(ax2,bx2),y2=Math.min(ay2,by2);
+  const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1); return inter/((a[2]*a[3])+(b[2]*b[3])-inter+1e-6);
+}
+function updateTracks(dets,old){
+  const used=new Set(), out=[];
+  for(const d of dets){
+    let best=null,bestIoU=.18;
+    for(const t of old){
+      if(used.has(t.id)||t.class!==d.class)continue;
+      const s=iou(d.bbox,t.bbox);if(s>bestIoU){bestIoU=s;best=t}
+    }
+    if(best){
+      used.add(best.id);
+      out.push({...best,bbox:d.bbox,score:d.score,age:0,lastSeen:performance.now()});
+    }else{
+      out.push({id:nextTrackId++,class:d.class,bbox:d.bbox,score:d.score,age:0,lastSeen:performance.now()});
+    }
+  }
+  for(const t of old) if(!used.has(t.id) && t.age<12) out.push({...t,age:t.age+1});
+  return out;
+}
+function ageTracks(ts){for(const t of ts)t.age++}
+
+function estimateDistance(t,W,H){
+  const boxH=t.bbox[3]*(H/video.videoHeight || 1);
+  const fov=+$('fov').value*Math.PI/180;
+  const focalPx=W/(2*Math.tan(fov/2));
+  const h=realHeight[t.class]||1.5;
+  if(boxH<4)return null;
+  const dist=(h*focalPx)/boxH;
+  return clamp(dist,1,150);
+}
+
+function fuseWorld(tracks,lane,W,H,dt){
+  const sx=W/(video.videoWidth||W), sy=H/(video.videoHeight||H);
+  const objs=[];
+  for(const t of tracks){
+    if(t.age>8)continue;
+    const [x,y,w,h]=t.bbox;
+    const b=[x*sx,y*sy,w*sx,h*sy];
+    const dist=estimateDistance(t,W,H);
+    const key=t.id, now=performance.now();
+    let closing=null, ttc=null;
+    const prev=history.get(key);
+    if(prev && dist!=null){
+      const sec=(now-prev.time)/1000;
+      if(sec>.05){closing=(prev.dist-dist)/sec; if(closing>.3) ttc=dist/closing;}
+    }
+    if(dist!=null) history.set(key,{dist,time:now});
+    const footX=b[0]+b[2]/2, footY=b[1]+b[3];
+    let inLane=false;
+    if(lane.left&&lane.right&&lane.conf>.2){
+      const lx=xAtY(lane.left,footY), rx=xAtY(lane.right,footY);
+      if(lx!=null&&rx!=null) inLane=footX>Math.min(lx,rx)&&footX<Math.max(lx,rx);
+    }else{
+      inLane=footX>W*.36&&footX<W*.64;
+    }
+    objs.push({...t,screenBox:b,distance:dist,closing,ttc,inLane});
+  }
+  const candidates=objs.filter(o=>o.inLane&&['car','truck','bus','motorcycle','bicycle','person'].includes(o.class)&&o.distance!=null);
+  candidates.sort((a,b)=>a.distance-b.distance);
+  const lead=candidates[0]||null;
+  const speed=+$('speed').value;
+  let warning='';
+  if(lead){
+    if(lead.ttc && lead.ttc<2.2) warning='⚠ FORWARD COLLISION';
+    else if(lead.distance<Math.max(6,speed*.20)) warning='⚠ SAFE DISTANCE';
+  }
+  let laneDeparture=false;
+  if(lane.left&&lane.right&&lane.conf>.35){
+    const y=H*.90,lx=xAtY(lane.left,y),rx=xAtY(lane.right,y),c=W/2;
+    if(lx!=null&&rx!=null){
+      const width=Math.abs(rx-lx), center=(lx+rx)/2;
+      laneDeparture=Math.abs(c-center)>width*.27;
+      if(laneDeparture && !warning)warning='⚠ LANE DEPARTURE';
+    }
+  }
+  return {objects:objs,lead,speed,warning,laneDeparture};
+}
+
+function drawObjects(objs,W,H){
+  ctx.save();ctx.font='600 13px system-ui';
+  for(const o of objs){
+    const [x,y,w,h]=o.screenBox;
+    const danger=o.inLane && ((o.ttc&&o.ttc<2.2)||(o.distance&&o.distance<8));
+    ctx.strokeStyle=danger?'#ff496c':(o.inLane?'#ffd33d':'#33d6ff');
+    ctx.lineWidth=danger?4:2;ctx.strokeRect(x,y,w,h);
+    let txt=`${o.class.toUpperCase()} #${o.id} ${(o.score*100).toFixed(0)}%`;
+    if(o.distance!=null)txt+=`  EST ${o.distance.toFixed(1)}m`;
+    const tw=ctx.measureText(txt).width+10;
+    ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(x,Math.max(0,y-21),tw,20);
+    ctx.fillStyle='#fff';ctx.fillText(txt,x+5,Math.max(14,y-6));
+  }
+  ctx.restore();
+}
+
+function updateHUD(world){
+  $('objectCount').textContent=world.objects.length;
+  $('laneConf').textContent=`${Math.round(laneSmoothed.conf*100)}%`;
+  $('leadDistance').textContent=world.lead?.distance!=null?`${world.lead.distance.toFixed(1)} m`:'—';
+  $('ttc').textContent=world.lead?.ttc&&world.lead.ttc<30?`${world.lead.ttc.toFixed(1)} s`:'—';
+  warningEl.textContent=world.warning;
+  warningEl.style.color=world.warning.includes('COLLISION')?'#ff496c':world.warning?'#ffd33d':'transparent';
+}
+
+function drawDebug(world,lane,W,H){
+  if(!debug){debugLog.textContent='';return}
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,.25)';ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(W/2,H*.5);ctx.lineTo(W/2,H);ctx.stroke();ctx.restore();
+  const lead=world.lead;
+  debugLog.textContent =
+`MODE: PROTOTYPE / RESEARCH
+AI backend: ${tf?.getBackend?.()||'n/a'}
+Inference: ${inferenceMs.toFixed(1)} ms
+Canvas FPS: ${fpsEMA.toFixed(1)}
+Lane confidence: ${(lane.conf*100).toFixed(0)}%
+Objects tracked: ${world.objects.length}
+Lead: ${lead?`${lead.class} #${lead.id}`:'none'}
+Lead distance: ${lead?.distance?lead.distance.toFixed(2)+' m EST.':'n/a'}
+Closing rate: ${lead?.closing?lead.closing.toFixed(2)+' m/s EST.':'n/a'}
+TTC: ${lead?.ttc?lead.ttc.toFixed(2)+' s EST.':'n/a'}
+Speed input: ${world.speed.toFixed(0)} km/h`;
+}
+
+function log(s){
+  const old=debugLog.textContent;
+  debugLog.textContent=(s+'\n'+old).slice(0,5000);
+}
+</script>
 </body>
 </html>
